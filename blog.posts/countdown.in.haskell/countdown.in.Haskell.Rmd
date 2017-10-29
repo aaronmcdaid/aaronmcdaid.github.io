@@ -1,0 +1,141 @@
+## Countdown solver, written in Haskell
+
+I loved the British game show [*Countdown*](https://en.wikipedia.org/wiki/Countdown_(game_show)) as a child,
+which is based on [*Des chiffres et des lettres*](https://en.wikipedia.org/wiki/Des_chiffres_et_des_lettres).
+My first attempt at a non-trivial C program was, if I remember correctly, and attempt to solve the "Numbers Round" on Countdown.
+
+Given a target number, and six input numbers, the goal is to combine the inputs using only addition, subtraction, multiplication and division and reach the target value.
+For example, given target $562$ and inputs $9,8,2,10,4,4$
+
+$$
+562 = 2+10*(4*4-9)*8
+$$
+
+Let's assume, for now, that each input must be used once, and only once, in the expression. In reality, it is not necessary to use them all and I will describe that near the end of this post.
+
+I'll call this pair, the target and the inputs, a *game*. A given game may have many solutions, or even zero solutions.
+
+In this post, I'll describe a program written in [Haskell](https://en.wikipedia.org/wiki/Haskell_(programming_language)). I don't claim to be an expert in Haskell; this is just a bit of fun. I've recently become much more interested in it via the [Haskell Dublin Meetup](https://www.meetup.com/Haskell-Dublin-Meetup/).
+
+# Expressions
+
+At first, let's consider using just two inputs, instead of the six that are allowed in the real game show. That gives us four expressions, where $a$ and $b$ will take the place of the inputs
+
+$$ a +      b $$
+$$ a -      b $$
+$$ a \times b $$
+$$ a \div   b $$
+
+Allowing three inputs, the number of expressions increases dramatically, here are some examples
+$$ a +   b \times c $$
+$$ (a +   b) \times c $$
+$$ (c \div   a) + b $$
+
+The first step in Haskell is to represent the expressions. There are three kinds of expression:
+
+1. `Letter` expressions. Just a single letter in isolation
+
+   $$a$$
+
+   $$b$$
+
+2. `ExprT` expressions. `T`erm-expressions involving two terms with addition or subtraction
+
+   $$a+c$$
+
+   $$d-b$$
+
+3. `ExprF` expressions. `F`actor-expressions involving two factors with multiplication and division
+
+   $$a \times c$$
+
+   $$d \div b$$
+
+```
+data Expr       =   ExprT Terms   -- term-expression  , i.e. two or more terms separated by (+) or (-)
+                |   ExprF Factors -- factor-expression, i.e. two or more factors separated by (*) or (/)
+                |   Letter Int    -- the Int is between 0 and 5 inclusive, for the six allowed variables
+```
+
+# Complex expressions
+
+More complex expressions are classified according to the 'top-level' operation, respecting the typical [Order of operations](https://en.wikipedia.org/wiki/Order_of_operations) in arithmetic.
+As a result, this is a term-expression:
+$$
+    b \times c + a
+$$
+because the addition is performed last. This is more clear with parentheses and spacing
+$$
+    (b{\times}c) + a
+$$
+or with this tree, where `*` represents multiplication:
+```
+         +      -- the top-level operation
+        / \
+       *   a
+      / \
+     b   c
+```
+
+On the other hand, the following is a factor-expression:
+$$
+    b \times (c{+}a)
+$$
+```
+         *      -- the top-level operation
+        / \
+       b   +
+          / \
+         c   a
+```
+
+# Recursive definition of `Expr`
+
+Focusing on `ExprT`, we need to represent the collection of two, or more, terms which are added or subtracted together. Each term is simply a subexpression
+
+```
+data Terms      = Terms Expr AddOrSubtract Expr
+--                                          |
+--                                          `----  second sub-Expr-ession
+--                       |
+--                       \-----------------------  first  sub-Expr-ession
+```
+where `AddOrSubtract` is simply `Add` or `Sub`:
+```
+data AddOrSubtract = Add | Sub
+```
+
+You might notice that this only allows two sub-`Expr`essions, when I said "two or more". To allow more than two terms, we allow that the first sub-Expr-ession might also be an `ExprT` expression. i.e.
+
+$$ d+a+e $$
+
+is represented as
+
+$$ (d+a)+e $$
+
+```
+         +
+        / \
+       +   +
+      / \   \
+     d   a   e
+```
+
+A longer example is $a+b-c+d-e+f$, which we can represent as $((((a+b)-c)+d)-e)+f$.
+
+To avoid redundantly generating many expressions which are obviously identical to each other, we ban expression such as
+
+$$ (a+b)+(c+d) $$
+
+which are identical to
+
+$$ ((a+b)+c)+d $$
+
+To enforce this, we require that the second sub-expression inside a `ExprT` must **_not_** itself be a `T`erm-expression. It may be `Letter` or `ExprF`.
+
+# Constraints
+
+To recap, with more clarity about the restriction we've just explained. There are three kinds of `Expr`:
+1. `ExprT` - a term-expression made up of exactly two sub-Expressions, combined by either addition or subtraction, where the second subexpression must not be a `ExprT`.
+1. `ExprF` - a factor-expression made up of exactly two sub-Expressions, combined by either multiplication or division, where the second subexpression must not be a `ExprF`.
+1. `Letter` - a single letter from the six allowed: $a,b,c,d,e,f$

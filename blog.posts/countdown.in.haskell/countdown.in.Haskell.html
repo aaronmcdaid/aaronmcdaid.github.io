@@ -136,7 +136,7 @@ $(document).ready(function () {
 <p>Allowing three inputs, the number of expressions increases dramatically, here are some examples <span class="math display">\[ a +   b \times c \]</span> <span class="math display">\[ (a +   b) \times c \]</span> <span class="math display">\[ (c \div   a) + b \]</span></p>
 <p>The first step in Haskell is to represent the expressions. There are three kinds of expression:</p>
 <ol style="list-style-type: decimal">
-<li><code>Letter</code> expressions. Just a single letter in isolation</li>
+<li><code>Letter</code> expressions. Just a <code>Single</code> letter in isolation</li>
 </ol>
 <p><span class="math display">\[a\]</span></p>
 <p><span class="math display">\[b\]</span></p>
@@ -152,7 +152,11 @@ $(document).ready(function () {
 <p><span class="math display">\[d \div b\]</span></p>
 <pre><code>data Expr       =   ExprT Terms   -- term-expression  , i.e. two or more terms separated by (+) or (-)
                 |   ExprF Factors -- factor-expression, i.e. two or more factors separated by (*) or (/)
-                |   Letter Int    -- the Int is between 0 and 5 inclusive, for the six allowed variables</code></pre>
+                |   Single Letter -- where 'Letter' (see below) represents 'a' through 'f'.</code></pre>
+<p>with a convenient <code>Letter</code> wrapper to store a single character, <code>'a'</code>,<code>'b'</code>,<code>'c'</code>,<code>'d'</code>,<code>'e'</code>,<code>'f'</code>:</p>
+<pre><code>data Letter = Letter Char -- the Char is between 'a' and 'f' inclusive, for the six allowed variables
+letter2offset :: Char -&gt; Int -- 'a'=0, 'b'=1, 'c'=2, ...
+letter2offset l = (fromEnum l) - (fromEnum 'a')</code></pre>
 </div>
 <div id="complex-expressions" class="section level2">
 <h2>Complex expressions</h2>
@@ -196,10 +200,10 @@ $(document).ready(function () {
      d   a   e</code></pre>
 <p>A longer example is <span class="math inline">\(a+b-c+d-e+f\)</span>, which we can represent as <span class="math inline">\(((((a+b)-c)+d)-e)+f\)</span>.</p>
 <p>To avoid redundantly generating many expressions which are obviously identical to each other, we ban expression such as</p>
-<p><span class="math display">\[ (a+b)+(c+d) \]</span></p>
+<p><span class="math display">\[ a*b+(c+d) \]</span></p>
 <p>which are identical to</p>
-<p><span class="math display">\[ ((a+b)+c)+d \]</span></p>
-<p>To enforce this, we require that the second sub-expression inside a <code>ExprT</code> must <strong><em>not</em></strong> itself be a <code>T</code>erm-expression. It may be <code>Letter</code> or <code>ExprF</code>.</p>
+<p><span class="math display">\[ (a*b+c)+d \]</span></p>
+<p>To enforce this, we require that the second sub-expression inside a <code>ExprT</code> must <strong><em>not</em></strong> itself be a <code>T</code>erm-expression. It may be <code>Letter</code> or <code>ExprF</code>. The second sub-expression in <span class="math inline">\(a*b+(c+d)\)</span> is <span class="math inline">\((c+d)\)</span>, which is a term-expression and therefore this expression is disallowed</p>
 </div>
 <div id="constraints" class="section level2">
 <h2>Constraints</h2>
@@ -209,6 +213,92 @@ $(document).ready(function () {
 <li><code>ExprF</code> - a factor-expression made up of exactly two sub-Expressions, combined by either multiplication or division, where the second subexpression must not be a <code>ExprF</code>.</li>
 <li><code>Letter</code> - a single letter from the six allowed: <span class="math inline">\(a,b,c,d,e,f\)</span></li>
 </ol>
+<p>The other constraint, of course, is that a given <code>Letter</code> may not appear more than once, i.e. we don’t allow this:</p>
+<p><span class="math display">\[ a*b + a \]</span></p>
+<pre><code>         +
+        / \
+       *   a       -- 'a' is  (Letter 0)
+      / \
+     a   b         -- 'a' is  (Letter 0), 'b' is (Letter 1)</code></pre>
+<p><span class="math inline">\(a\)</span> (i.e. <code>Letter 0</code>) appears twice in that expression, therefore that expression is invalid.</p>
+</div>
+</div>
+<div id="recap-the-data-representation" class="section level1">
+<h1>Recap the data representation</h1>
+<p>To recap the data representation:</p>
+<pre><code>data Expr       =   ExprT Terms   -- additive expression, i.e. two or more terms separated by +-
+                |   ExprF Factors -- multiplicative expression, i.e. two or more factors separated by +-
+                |   Single Letter -- where 'Letter' (see below) represents 'a' through 'f', the first six letters
+data Terms      = Terms Expr AddOrSubtract Expr         -- second Expr must *not* be ExprT
+data Factors    = Factors Expr MultiplyOrDivide Expr    -- second Expr must *not* be ExprF
+
+data AddOrSubtract = Add | Sub
+data MultiplyOrDivide = Mul | Div
+data Letter = Letter Char -- the Char is between 'a' and 'f' inclusive, for the six allowed variables
+
+letter2offset :: Char -&gt; Int -- 'a'=0, 'b'=1, 'c'=2, ...
+letter2offset l = (fromEnum l) - (fromEnum 'a')</code></pre>
+<div id="generating-all-expressions-subject-to-those-constraints" class="section level2">
+<h2>Generating all expressions, subject to those constraints</h2>
+<p>Given three letters <span class="math inline">\(a,b,c\)</span>, represented as a list in Haskell with <code>[Letter 0, Letter 1, Letter 2]</code>, we want to generate all the valid <code>Expr</code>-essions.</p>
+<p>We first need to define a useful utility function, <code>allPartitions</code>. Given a list, it will return a list of pairs of lists, with every possible way to split the list into two lists. If there are <span class="math inline">\(n\)</span> items in the original list, there will be <span class="math inline">\(2^n\)</span> items in the list of all partitions.</p>
+<pre><code>allPartitions :: [a] -&gt; [([a],[a])]
+allPartitions [] = [([],[])]
+allPartitions [x] = [([x],[]),([],[x])]
+allPartitions (x:xs) =  [  (x:l,r  )  | (l,r) &lt;- allPartitions xs ]
+                     ++ [  (l  ,x:r)  | (l,r) &lt;- allPartitions xs ]
+</code></pre>
+<pre class="haskell"><code>let { allPartitions [] = [([],[])] ; allPartitions [x] = [([x],[]),([],[x])] ; allPartitions (x:xs) =  [  (x:l,r  )  | (l,r) &lt;- allPartitions xs ] ++ [  (l  ,x:r)  | (l,r) &lt;- allPartitions xs ] }
+
+allPartitions ['a'..'c']</code></pre>
+<pre><code>## [(&quot;abc&quot;,&quot;&quot;),(&quot;ab&quot;,&quot;c&quot;),(&quot;ac&quot;,&quot;b&quot;),(&quot;a&quot;,&quot;bc&quot;),(&quot;bc&quot;,&quot;a&quot;),(&quot;b&quot;,&quot;ac&quot;),(&quot;c&quot;,&quot;ab&quot;),(&quot;&quot;,&quot;abc&quot;)]</code></pre>
+</div>
+<div id="allexprs" class="section level2">
+<h2><code>allExprs</code></h2>
+<p>So, <code>allExprs</code> is a function from a list of <code>Letter</code>s to a list of <code>Expr</code>essions:</p>
+<pre><code>allExprs :: [Letter] -&gt; [Expr]</code></pre>
+<p>If the list of letters has zero or one elements, the list of expressions is relatively simple</p>
+<pre><code>allExprs [] = []            -- no expressions possible
+allExprs [l] = [Single l]   -- just one expression is possible, made up of a Single Letter</code></pre>
+<p>But if there are more than two letters in the lists, we have to build a list of all the possible term-expressions and all the possible factor-expressions. Here is the full function before I discuss it a little further:</p>
+<pre><code>allExprs :: [Letter] -&gt; [Expr]
+allExprs [] = []
+allExprs [l] = [Single l]
+allExprs ls =   [ ExprT (Terms e1 addOrSubtract e2)
+                | (l,r) &lt;- allPartitions ls
+                , not . null $ l
+                , not . null $ r
+                , e2 &lt;- allExprs r
+                , case e2 of -- to enforce that the second Expr in an ExprT is *not* an ExprT
+                        (ExprT _)   -&gt; False
+                        _           -&gt; True
+                , e1 &lt;- allExprs l
+                , addOrSubtract &lt;- [Add, Sub]
+                ]
+             ++ [ ExprF (Factors e1 multiplyOrDivide e2)
+                | (l,r) &lt;- allPartitions ls
+                , not . null $ l
+                , not . null $ r
+                , e2 &lt;- allExprs r
+                , case e2 of -- to enforce that the second Expr in an ExprF is *not* an ExprF
+                        (ExprF _)   -&gt; False
+                        _           -&gt; True
+                , e1 &lt;- allExprs l
+                , multiplyOrDivide &lt;- [Mul, Div]
+                ]</code></pre>
+<p>A <em>list-comprehension</em> in Haskell is <code>[ e | ... ]</code>, where the <code>...</code> are made up of several loop variables and condition expressions separated by commas. For example, to make a list of <span class="math inline">\(x^2\)</span> for each <em>odd</em> integer in the range <code>[0..10]</code>, you would do</p>
+<pre><code>squares_of_some_odd_numbers = [ x^2 | x &lt;- [0..10] , x `mod` 2 == 1]</code></pre>
+<p>Detailed explanation of the above:</p>
+<ol style="list-style-type: decimal">
+<li><code>(l,r) &lt;- allPartitions ls</code> - for each possible partition of <code>ls</code>, store the two sides into <code>l</code> and <code>r</code>.</li>
+<li><code>, not . null $ l</code> - condition ignoring an empty left-hand-side.</li>
+<li><code>, not . null $ r</code> - condition ignoring an empty right-hand-side.</li>
+<li><code>, e2 &lt;- allExprs r</code> - recursively call <code>allExprs</code> with the right-hand-side.</li>
+<li><code>, case e2 of { (ExprT _)  -&gt; False;  _  -&gt; True }</code> - skip (via <code>False</code>) when the second sub-expression would be a term-expression.</li>
+<li><code>, e1 &lt;- allExprs l</code> - recursively call <code>allExprs</code> with the left-hand-side.</li>
+<li><code>, addOrSubtract &lt;- [Add, Sub]</code> - to try both possibilities</li>
+</ol>
+<p>Each of those items in the list above is either something to loop over (<code>e2</code>,<code>e1</code>, or <code>addOrSubtract</code>) or a condition to skip over some of those. For every combination that is acceptable, we evaluate <code>ExprT (Terms e1 addOrSubtract e2)</code> (or <code>ExprF (Factors e1 multiplyOrDivide e2)</code> when computing all the factor-expressions) and return the entire list</p>
 </div>
 </div>
 

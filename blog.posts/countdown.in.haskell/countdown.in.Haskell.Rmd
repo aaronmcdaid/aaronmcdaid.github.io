@@ -33,7 +33,7 @@ $$ (c \div   a) + b $$
 
 The first step in Haskell is to represent the expressions. There are three kinds of expression:
 
-1. `Letter` expressions. Just a single letter in isolation
+1. `Letter` expressions. Just a `Single` letter in isolation
 
    $$a$$
 
@@ -54,7 +54,13 @@ The first step in Haskell is to represent the expressions. There are three kinds
 ```
 data Expr       =   ExprT Terms   -- term-expression  , i.e. two or more terms separated by (+) or (-)
                 |   ExprF Factors -- factor-expression, i.e. two or more factors separated by (*) or (/)
-                |   Letter Int    -- the Int is between 0 and 5 inclusive, for the six allowed variables
+                |   Single Letter -- where 'Letter' (see below) represents 'a' through 'f'.
+```
+with a convenient `Letter` wrapper to store a single character, `'a'`,`'b'`,`'c'`,`'d'`,`'e'`,`'f'`:
+```
+data Letter = Letter Char -- the Char is between 'a' and 'f' inclusive, for the six allowed variables
+letter2offset :: Char -> Int -- 'a'=0, 'b'=1, 'c'=2, ...
+letter2offset l = (fromEnum l) - (fromEnum 'a')
 ```
 
 ## Complex expressions
@@ -153,6 +159,100 @@ $$ a*b + a $$
 ```
 $a$ (i.e. `Letter 0`) appears twice in that expression, therefore that expression is invalid.
 
+# Recap the data representation
+To recap the data representation:
+```
+data Expr       =   ExprT Terms   -- additive expression, i.e. two or more terms separated by +-
+                |   ExprF Factors -- multiplicative expression, i.e. two or more factors separated by +-
+                |   Single Letter -- where 'Letter' (see below) represents 'a' through 'f', the first six letters
+data Terms      = Terms Expr AddOrSubtract Expr         -- second Expr must *not* be ExprT
+data Factors    = Factors Expr MultiplyOrDivide Expr    -- second Expr must *not* be ExprF
+
+data AddOrSubtract = Add | Sub
+data MultiplyOrDivide = Mul | Div
+data Letter = Letter Char -- the Char is between 'a' and 'f' inclusive, for the six allowed variables
+
+letter2offset :: Char -> Int -- 'a'=0, 'b'=1, 'c'=2, ...
+letter2offset l = (fromEnum l) - (fromEnum 'a')
+```
+
 ## Generating all expressions, subject to those constraints
 
 Given three letters $a,b,c$, represented as a list in Haskell with `[Letter 0, Letter 1, Letter 2]`, we want to generate all the valid `Expr`-essions.
+
+We first need to define a useful utility function, `allPartitions`. Given a list, it will return a list of pairs of lists, with every possible way to split the list into two lists. If there are $n$ items in the original list, there will be $2^n$ items in the list of all partitions.
+```
+allPartitions :: [a] -> [([a],[a])]
+allPartitions [] = [([],[])]
+allPartitions [x] = [([x],[]),([],[x])]
+allPartitions (x:xs) =  [  (x:l,r  )  | (l,r) <- allPartitions xs ]
+                     ++ [  (l  ,x:r)  | (l,r) <- allPartitions xs ]
+
+```
+```{haskell}
+let { allPartitions [] = [([],[])] ; allPartitions [x] = [([x],[]),([],[x])] ; allPartitions (x:xs) =  [  (x:l,r  )  | (l,r) <- allPartitions xs ] ++ [  (l  ,x:r)  | (l,r) <- allPartitions xs ] }
+
+allPartitions ['a'..'c']
+```
+
+## `allExprs`
+
+So, `allExprs` is a function from a list of `Letter`s to a list of `Expr`essions:
+
+```
+allExprs :: [Letter] -> [Expr]
+```
+If the list of letters has zero or one elements, the list of expressions is relatively simple
+```
+allExprs [] = []            -- no expressions possible
+allExprs [l] = [Single l]   -- just one expression is possible, made up of a Single Letter
+```
+But if there are more than two letters in the lists, we have to build a list of all the possible term-expressions and all the possible factor-expressions. Here is the full function before I discuss it a little further:
+```
+allExprs :: [Letter] -> [Expr]
+allExprs [] = []
+allExprs [l] = [Single l]
+allExprs ls =   [ ExprT (Terms e1 addOrSubtract e2)
+                | (l,r) <- allPartitions ls
+                , not . null $ l
+                , not . null $ r
+                , e2 <- allExprs r
+                , case e2 of -- to enforce that the second Expr in an ExprT is *not* an ExprT
+                        (ExprT _)   -> False
+                        _           -> True
+                , e1 <- allExprs l
+                , addOrSubtract <- [Add, Sub]
+                ]
+             ++ [ ExprF (Factors e1 multiplyOrDivide e2)
+                | (l,r) <- allPartitions ls
+                , not . null $ l
+                , not . null $ r
+                , e2 <- allExprs r
+                , case e2 of -- to enforce that the second Expr in an ExprF is *not* an ExprF
+                        (ExprF _)   -> False
+                        _           -> True
+                , e1 <- allExprs l
+                , multiplyOrDivide <- [Mul, Div]
+                ]
+```
+
+A *list-comprehension* in Haskell is `[ e | ... ]`, where the `...` are made up of several loop variables and condition expressions separated by commas. For example, to make a list of $x^2$ for each *odd* integer in the range `[0..10]`, you would do
+```
+squares_of_some_odd_numbers = [ x^2 | x <- [0..10] , x `mod` 2 == 1]
+```
+
+Detailed explanation of the above:
+
+1. `(l,r) <- allPartitions ls` - for each possible partition of `ls`, store the two sides into `l` and `r`.
+1. `, not . null $ l`  - condition ignoring an empty left-hand-side.
+1. `, not . null $ r`  - condition ignoring an empty right-hand-side.
+1. `, e2 <- allExprs r` - recursively call `allExprs` with the right-hand-side.
+1. `, case e2 of { (ExprT _)  -> False;  _  -> True }` - skip (via `False`) when the second sub-expression would be a term-expression.
+1. `, e1 <- allExprs l` - recursively call `allExprs` with the left-hand-side.
+1. `, addOrSubtract <- [Add, Sub]` - to try both possibilities
+
+Each of those items in the list above is either something to loop over (`e2`,`e1`, or `addOrSubtract`) or a condition to skip over some of those. For every combination that is acceptable, we evaluate
+`ExprT (Terms e1 addOrSubtract e2)`
+(or
+`ExprF (Factors e1 multiplyOrDivide e2)`
+ when computing all the factor-expressions) and return the entire list.

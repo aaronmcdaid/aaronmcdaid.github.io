@@ -130,25 +130,26 @@ $$
 of the probability density.**
 
 It would be tempting now to compare
-$\mathrm{\hat{P}}(\mathbf{x} | H_\theta)$
+$\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}})$
 to
 $\mathrm{     P }(\mathbf{x} | H_1)$
-and use that to decide whether to select $H_1$ or $H_\theta$.
-However, is is guaranteed to always select $H_\theta$!
-By construction, the $\hat\theta$ is the value which maximizes the likelihood and
-therefore the likelihood under $\sigma^2 = \hat\theta$ is guaranteed to be at least
+and use that to decide whether to select $H_1$ or $H_{\hat\tau^{-1}}$.
+However, that technique is guaranteed to always select $H_{\hat\tau^{-1}}$!
+
+By construction, the $\hat\tau^{-1}$ is the value which maximizes the likelihood and
+therefore the likelihood under $\sigma^2 = \hat\tau^{-1}$ is guaranteed to be at least
 as large as that under $H_1$:
 
 $$
-\mathrm{P}(\mathbf{x} | H_{\hat\theta}) > \mathrm{     P }(\mathbf{x} | H_1)
+\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}}) > \mathrm{     P }(\mathbf{x} | H_1)
 $$
-(Equality is not possible in that, as $\hat\theta$ will never be exactly equal to $1$)
+(Equality is not possible in that, as $\hat\tau^{-1}$ will never be exactly equal to $1$)
 
 So yes, we do want to estimate
-$\mathrm{P}(\mathbf{x} | H_{\theta})$,
+$\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$,
 but
-$\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\theta})$
-is a very biased estimate of that and is therefore useless as is.
+$\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}})$
+is a very biased estimate of that and therefore can't be used as is.
 
 Before proceeding, I should note that the [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
 or [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) can be used to adjust
@@ -156,20 +157,38 @@ these estimates and reduce the bias. Go head and read those links, they are inte
 But this post is about another approach.
 
 
+## Priors
 
-## priors
-
-How do we resolve this, and use an estimate $\mathrm{P}(\mathbf{x} | H_\theta)$ that is less biased?
+How do we resolve this, and use an estimate $\mathrm{P}(\mathbf{x} | H_{\hat\tau^{-1}})$ that is less biased?
 
 We don't know the true $\tau$, but let's assume we know it was drawn from a
 Gamma distribution:
 $$
-\tau \sim \mathcal{Gamma}(\alpha,\beta)
+\tau \sim \mathrm{Gamma}(\alpha,\beta)
 $$
 
-If $\alpha$ and $\beta$ are known, we can compute
+If $\alpha$ and $\beta$ are known, we can compute the integral over $\tau$:
 $$
-\int_\Gamma \mathrm{P}(\mathbf{x} | H_{\theta{=}\tau^{-1}})
+\mathrm{P}_\tau(\mathbf{x} ) = \int \mathrm{P}(\mathbf{x} | H_{\tau^{-1}}) \mathrm{P}(\tau) ~\mathrm{d}\tau
+$$
+
+We can then compare $\mathrm{P}_\tau(\mathbf{x})$ to $\mathrm{P}(\mathbf{x}|H_1)$ as usual.
+
+In practice, we compute that integral in the code below via the following equation, with $\tau$ on the right hand side replaced by an arbitrary value:
+$$
+\mathrm{P}(\mathbf{x})
+=
+\frac{
+\mathrm{P}(\mathbf{x} | H_{\tau^{-1}}) \mathrm{P}(\tau)
+}{
+\mathrm{P}(\tau|\mathbf{x})
+}
+$$
+where
+$\mathrm{P}(\tau|\mathbf{x})$ is the posterior distribution, i.e. the conditional distribution of $\tau$ given $\mathrm{x}$.
+This distribution is
+$$
+\tau|\mathbf{x} ~~ \sim ~~ \mathrm{Gamma}\left( \alpha + \frac{n}2, \beta + \frac12 \sum_{i=1}^n x_i^2 \right)
 $$
 
 &nbsp;

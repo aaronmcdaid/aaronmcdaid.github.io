@@ -119,8 +119,8 @@ $(document).ready(function () {
 </div>
 
 
-<div id="countdown-solver-written-in-haskell" class="section level2">
-<h2>Countdown solver, written in Haskell</h2>
+<div id="countdown-solver-written-in-haskell" class="section level1">
+<h1>Countdown solver, written in Haskell</h1>
 <p>I loved the British game show <a href="https://en.wikipedia.org/wiki/Countdown_(game_show)"><em>Countdown</em></a> as a child, which is based on <a href="https://en.wikipedia.org/wiki/Des_chiffres_et_des_lettres"><em>Des chiffres et des lettres</em></a>. My first attempt at a non-trivial C program was, if I remember correctly, and attempt to solve the “Numbers Round” on Countdown.</p>
 <p>Given a target number, and six input numbers, the goal is to combine the inputs using only addition, subtraction, multiplication and division and reach the target value. For example, given target <span class="math inline">\(562\)</span> and inputs <span class="math inline">\(9,8,2,10,4,4\)</span></p>
 <p><span class="math display">\[
@@ -129,9 +129,8 @@ $(document).ready(function () {
 <p>Let’s assume, for now, that each input must be used once, and only once, in the expression. In reality, it is not necessary to use them all and I will describe that near the end of this post.</p>
 <p>I’ll call this pair, the target and the inputs, a <em>game</em>. A given game may have many solutions, or even zero solutions.</p>
 <p>In this post, I’ll describe a program written in <a href="https://en.wikipedia.org/wiki/Haskell_(programming_language)">Haskell</a>. I don’t claim to be an expert in Haskell; this is just a bit of fun. I’ve recently become much more interested in it via the <a href="https://www.meetup.com/Haskell-Dublin-Meetup/">Haskell Dublin Meetup</a>.</p>
-</div>
-<div id="expressions" class="section level1">
-<h1>Expressions</h1>
+<div id="expressions" class="section level2">
+<h2>Expressions</h2>
 <p>At first, let’s consider using just two inputs, instead of the six that are allowed in the real game show. That gives us four expressions, where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> will take the place of the inputs</p>
 <p><span class="math display">\[ a +      b \]</span> <span class="math display">\[ a -      b \]</span> <span class="math display">\[ a \times b \]</span> <span class="math display">\[ a \div   b \]</span></p>
 <p>Allowing three inputs, the number of expressions increases dramatically, here are some examples <span class="math display">\[ a +   b \times c \]</span> <span class="math display">\[ (a +   b) \times c \]</span> <span class="math display">\[ (c \div   a) + b \]</span></p>
@@ -155,8 +154,8 @@ $(document).ready(function () {
                 |   ExprF Factors -- factor-expression, i.e. two or more factors separated by (*) or (/)
                 |   Letter Int    -- the Int is between 0 and 5 inclusive, for the six allowed variables</code></pre>
 </div>
-<div id="complex-expressions" class="section level1">
-<h1>Complex expressions</h1>
+<div id="complex-expressions" class="section level2">
+<h2>Complex expressions</h2>
 <p>More complex expressions are classified according to the ‘top-level’ operation, respecting the typical <a href="https://en.wikipedia.org/wiki/Order_of_operations">Order of operations</a> in arithmetic. As a result, this is a term-expression: <span class="math display">\[
     b \times c + a
 \]</span> because the addition is performed last. This is more clear with parentheses and spacing <span class="math display">\[
@@ -176,8 +175,8 @@ $(document).ready(function () {
           / \
          c   a</code></pre>
 </div>
-<div id="recursive-definition-of-expr" class="section level1">
-<h1>Recursive definition of <code>Expr</code></h1>
+<div id="recursive-definition-of-expr" class="section level2">
+<h2>Recursive definition of <code>Expr</code></h2>
 <p>Focusing on <code>ExprT</code>, we need to represent the collection of two, or more, terms which are added or subtracted together. Each term is simply a subexpression</p>
 <pre><code>data Terms      = Terms Expr AddOrSubtract Expr
 --                                          |
@@ -202,9 +201,15 @@ $(document).ready(function () {
 <p><span class="math display">\[ ((a+b)+c)+d \]</span></p>
 <p>To enforce this, we require that the second sub-expression inside a <code>ExprT</code> must <strong><em>not</em></strong> itself be a <code>T</code>erm-expression. It may be <code>Letter</code> or <code>ExprF</code>.</p>
 </div>
-<div id="constraints" class="section level1">
-<h1>Constraints</h1>
-<p>To recap, with more clarity about the restriction we’ve just explained. There are three kinds of <code>Expr</code>: 1. <code>ExprT</code> - a term-expression made up of exactly two sub-Expressions, combined by either addition or subtraction, where the second subexpression must not be a <code>ExprT</code>. 1. <code>ExprF</code> - a factor-expression made up of exactly two sub-Expressions, combined by either multiplication or division, where the second subexpression must not be a <code>ExprF</code>. 1. <code>Letter</code> - a single letter from the six allowed: <span class="math inline">\(a,b,c,d,e,f\)</span></p>
+<div id="constraints" class="section level2">
+<h2>Constraints</h2>
+<p>To recap, with more clarity about the restriction we’ve just explained. There are three kinds of <code>Expr</code>:</p>
+<ol style="list-style-type: decimal">
+<li><code>ExprT</code> - a term-expression made up of exactly two sub-Expressions, combined by either addition or subtraction, where the second subexpression must not be a <code>ExprT</code>.</li>
+<li><code>ExprF</code> - a factor-expression made up of exactly two sub-Expressions, combined by either multiplication or division, where the second subexpression must not be a <code>ExprF</code>.</li>
+<li><code>Letter</code> - a single letter from the six allowed: <span class="math inline">\(a,b,c,d,e,f\)</span></li>
+</ol>
+</div>
 </div>
 
 

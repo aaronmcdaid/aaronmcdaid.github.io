@@ -1,4 +1,4 @@
-## Countdown solver, written in Haskell
+# Countdown solver, written in Haskell
 
 I loved the British game show [*Countdown*](https://en.wikipedia.org/wiki/Countdown_(game_show)) as a child,
 which is based on [*Des chiffres et des lettres*](https://en.wikipedia.org/wiki/Des_chiffres_et_des_lettres).
@@ -17,7 +17,7 @@ I'll call this pair, the target and the inputs, a *game*. A given game may have 
 
 In this post, I'll describe a program written in [Haskell](https://en.wikipedia.org/wiki/Haskell_(programming_language)). I don't claim to be an expert in Haskell; this is just a bit of fun. I've recently become much more interested in it via the [Haskell Dublin Meetup](https://www.meetup.com/Haskell-Dublin-Meetup/).
 
-# Expressions
+## Expressions
 
 At first, let's consider using just two inputs, instead of the six that are allowed in the real game show. That gives us four expressions, where $a$ and $b$ will take the place of the inputs
 
@@ -57,7 +57,7 @@ data Expr       =   ExprT Terms   -- term-expression  , i.e. two or more terms s
                 |   Letter Int    -- the Int is between 0 and 5 inclusive, for the six allowed variables
 ```
 
-# Complex expressions
+## Complex expressions
 
 More complex expressions are classified according to the 'top-level' operation, respecting the typical [Order of operations](https://en.wikipedia.org/wiki/Order_of_operations) in arithmetic.
 As a result, this is a term-expression:
@@ -89,7 +89,7 @@ $$
          c   a
 ```
 
-# Recursive definition of `Expr`
+## Recursive definition of `Expr`
 
 Focusing on `ExprT`, we need to represent the collection of two, or more, terms which are added or subtracted together. Each term is simply a subexpression
 
@@ -125,17 +125,34 @@ A longer example is $a+b-c+d-e+f$, which we can represent as $((((a+b)-c)+d)-e)+
 
 To avoid redundantly generating many expressions which are obviously identical to each other, we ban expression such as
 
-$$ (a+b)+(c+d) $$
+$$ a*b+(c+d) $$
 
 which are identical to
 
-$$ ((a+b)+c)+d $$
+$$ (a*b+c)+d $$
 
-To enforce this, we require that the second sub-expression inside a `ExprT` must **_not_** itself be a `T`erm-expression. It may be `Letter` or `ExprF`.
+To enforce this, we require that the second sub-expression inside a `ExprT` must **_not_** itself be a `T`erm-expression. It may be `Letter` or `ExprF`. The second sub-expression in $a*b+(c+d)$ is $(c+d)$, which is a term-expression and therefore this expression is disallowed
 
-# Constraints
+## Constraints
 
 To recap, with more clarity about the restriction we've just explained. There are three kinds of `Expr`:
+
 1. `ExprT` - a term-expression made up of exactly two sub-Expressions, combined by either addition or subtraction, where the second subexpression must not be a `ExprT`.
 1. `ExprF` - a factor-expression made up of exactly two sub-Expressions, combined by either multiplication or division, where the second subexpression must not be a `ExprF`.
 1. `Letter` - a single letter from the six allowed: $a,b,c,d,e,f$
+
+The other constraint, of course, is that a given `Letter` may not appear more than once, i.e. we don't allow this:
+
+$$ a*b + a $$
+```
+         +
+        / \
+       *   a       -- 'a' is  (Letter 0)
+      / \
+     a   b         -- 'a' is  (Letter 0), 'b' is (Letter 1)
+```
+$a$ (i.e. `Letter 0`) appears twice in that expression, therefore that expression is invalid.
+
+## Generating all expressions, subject to those constraints
+
+Given three letters $a,b,c$, represented as a list in Haskell with `[Letter 0, Letter 1, Letter 2]`, we want to generate all the valid `Expr`-essions.

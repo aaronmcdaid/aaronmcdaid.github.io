@@ -30,6 +30,8 @@ and you want to estimate ("select") which of the models was used to generate the
 This post will use some very simple examples, for which there are often other simple methods
 to estimate ("select") which model was used, but I focus on using unit information priors as
 they can often be easily extended to more complex models.
+I'm currently using these priors in [my MCMC algorithm](https://aaronmcdaid.github.io/demos/mvnMCMC/mvnMCMC.html)
+which does clustering in multi-dimensional data; I hope someday to discuss that algorithm on this blog.
 
 ## The Neyman-Pearson lemma
 
@@ -190,6 +192,28 @@ This distribution is
 $$
 \tau|\mathbf{x} ~~ \sim ~~ \mathrm{Gamma}\left( \alpha + \frac{n}2, \beta + \frac12 \sum_{i=1}^n x_i^2 \right)
 $$
+
+## Unit information
+
+But we generally don't know $\alpha$ or $\beta$, as we have no model of where $\tau$ (assuming $H_{\tau^{-1}}$ is the 'true' model) comes from.
+To decide which values to use in place of these, we first compare the prior and posterior directly:
+$$
+\tau            ~~ \sim ~~ \mathrm{Gamma}\left( \alpha, \beta  \right) ~~~~~~~~~~~~~~~~~~~~
+$$
+$$
+\tau|\mathbf{x} ~~ \sim ~~ \mathrm{Gamma}\left( \alpha + \frac{n}2, \beta + \frac12 \sum_{i=1}^n x_i^2 \right)
+$$
+
+The effect of the $n$ observations on $\alpha$ is to add $\frac{n}2$.
+Therefore, the effect of a single observation (*unit information*) is to add $\frac12$ to $\alpha$.
+Similarly, $\frac1{2n} \sum_{i=1}^n x_i^2$ is added to $\beta$ by one observation.
+We could define the *zero information prior* as $\mathrm{Gamma}(0,0)$ (useless as a prior, as it is [*improper*](https://en.wikipedia.org/wiki/Prior_probability#Improper_priors)).
+The *unit information prior (UIP)* is then defined as adding the effect of one observation to the zero information prior:
+$$\tau ~~ \sim ~~ \mathrm{Gamma}\left(  \frac12, \frac1{2n} \sum_{i=1}^n x_i^2 \right)$$
+and therefore we use
+$\alpha=\frac12$ and $\beta = \frac1{2n} \sum_{i=1}^n x_i^2$ as our prior.
+Note that prior does depend on one observed data. However, it is a relatively diffuse prior as it's based on the average effect of one observation instead of the combined effect of $n$ observations.
+
 
 &nbsp;
 

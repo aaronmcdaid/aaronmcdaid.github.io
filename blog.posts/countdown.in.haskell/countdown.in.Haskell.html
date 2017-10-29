@@ -132,11 +132,12 @@ $(document).ready(function () {
 <div id="countdown-solver-written-in-haskell" class="section level1">
 <h1><em>Countdown solver, written in Haskell</em></h1>
 <div style="text-align:right">
-<p><strong><em>by Aaron, 29th October 2017</em></strong></p>
+<p><strong><em>by <a href="https://aaronmcdaid.github.io/">Aaron</a>, 29th October 2017</em></strong></p>
 </div>
 </div>
 <div id="section-1" class="section level1">
 <h1> </h1>
+<p>(A demo program of this, with all the code, is available as <a href="https://raw.githubusercontent.com/aaronmcdaid/aaronmcdaid.github.io/master/blog.posts/countdown.in.haskell/countdown.hs">countdown.hs</a> .)</p>
 <p>I loved the British game show <a href="https://en.wikipedia.org/wiki/Countdown_(game_show)"><em>Countdown</em></a> as a child, which is based on <a href="https://en.wikipedia.org/wiki/Des_chiffres_et_des_lettres"><em>Des chiffres et des lettres</em></a>. My first attempt at a non-trivial C program was, if I remember correctly, and attempt to solve the “Numbers Round” on Countdown.</p>
 <p>Given a target number, and six input numbers, the goal is to combine the inputs using only addition, subtraction, multiplication and division and reach the target value. For example, given target <span class="math inline">\(562\)</span> and inputs <span class="math inline">\(9,8,2,10,4,4\)</span></p>
 <p><span class="math display">\[
@@ -385,6 +386,11 @@ main = do
          (c+(d*f-a)*b*e) (2+(4*4-9)*8*10)
        (c+(a-f)*(d+e)*b) (2+(9-4)*(4+10)*8)
        (c-(e+f)*b*(d-a)) (2-(10+4)*8*(4-9))</code></pre>
+<p> </p>
+ 
+<div style="text-align:right">
+<p><strong><em>by <a href="https://aaronmcdaid.github.io/">Aaron</a>, 29th October 2017</em></strong></p>
+</div>
 </div>
 </div>
 

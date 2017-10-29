@@ -15,10 +15,12 @@ Statistics and C++, and other fun projects
 
 # *Countdown solver, written in Haskell*
 <div style="text-align:right">
-***by Aaron, 29th October 2017***
+***by [Aaron](https://aaronmcdaid.github.io/), 29th October 2017***
 </div>
 
 # &nbsp;
+
+(A demo program of this, with all the code, is available as [countdown.hs](https://raw.githubusercontent.com/aaronmcdaid/aaronmcdaid.github.io/master/blog.posts/countdown.in.haskell/countdown.hs) .)
 
 I loved the British game show [*Countdown*](https://en.wikipedia.org/wiki/Countdown_(game_show)) as a child,
 which is based on [*Des chiffres et des lettres*](https://en.wikipedia.org/wiki/Des_chiffres_et_des_lettres).
@@ -38,6 +40,7 @@ I'll call this pair, the target and the inputs, a *game*. A given game may have 
 In this post, I'll describe a program written in [Haskell](https://en.wikipedia.org/wiki/Haskell_(programming_language)). I don't claim to be an expert in Haskell; this is just a bit of fun. I've recently become much more interested in it via the [Haskell Dublin Meetup](https://www.meetup.com/Haskell-Dublin-Meetup/).
 
 Any feedback appreciated! `aaron.mcdaid@gmail.com` or Twitter: [`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+
 
 ## Expressions
 
@@ -376,3 +379,10 @@ This gives hundreds of solutions, here are a few:
        (c+(a-f)*(d+e)*b) (2+(9-4)*(4+10)*8)
        (c-(e+f)*b*(d-a)) (2-(10+4)*8*(4-9))
 ```
+
+&nbsp;
+
+&nbsp;
+<div style="text-align:right">
+***by [Aaron](https://aaronmcdaid.github.io/), 29th October 2017***
+</div>

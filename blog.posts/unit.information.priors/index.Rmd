@@ -22,8 +22,9 @@ Statistics and C++, and other fun projects
 
 This is the first in a series of posts I hope to wrote on model selection and the use of *unit information priors*.
 I don't claim any great novelty in this post, I'm just writing up some simple experiments I'm doing to help me develop more intuition.
+Hope you find it interesting, and don't hesitate to contact if you have any comments!
 
-The basic issue is that you have two models and an observed dataset which you know was generated from one of those two models,
+The basic issue that I'm going to tackle is that you have two models and an observed dataset which you know was generated from one of those two models,
 and you want to estimate ("select") which of the models was used to generate the dataset.
 
 This post will use some very simple examples, for which there are often other simple methods
@@ -79,39 +80,54 @@ and therefore the density can be calculated exactly from the observed data $\mat
 
 ## (non-)Point hypotheses
 
-But what if $H_2$ is replaced with $H_\theta$, with unknown $\theta$?
-$$ H_\theta : x_i \sim \mathcal{N}(0,\theta) $$
+Before proceeding,
+Let's define $\tau{=}\frac1{\sigma^2}$, the inverse of the *variance*.
+This is known as the *precision* and is often easier to work with mathematically.
+We can now refer to a Normal distribution as $\mathcal{N}(\mu,\tau^{-1})$,
+which is equivalent to $\mathcal{N}(\mu,\sigma^2)$.
 
-In this case, if we don't know exactly what $\theta$ is, we cannot compute
-$\mathrm{P}(\mathbf{x} | H_\theta)$.
-Given a dataset which we know was draw from $H_1$ or $H_\theta$, how do we select which of those was the true model?
+So - returning to our models - what do we do if $H_2$ is replaced with
+$H_\tau$, with unknown variance (unknown $\sigma^2$)?
+How do we now select between $H_1$ and $H_{\tau^{-1}}$?
 
-## Naive approach, via an estimate $\hat\theta$
+$$ H_\tau : x_i \sim \mathcal{N}(0,\tau^{-1}) $$
 
-Given an observed vector $\mathrm{x}$, we can estimate its variance as the variance which maximizes
-$\mathrm{P}(\mathbf{x} | H_\theta)$. This is the [Maximum Likelihood Estimate (MLE)](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation):
+In this case, if we don't know exactly what $\tau$ is, we cannot exactly compute
+$\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$.
+Given a dataset which we know was drawn from $H_1$ or $H_{\tau^{-1}}$, how do we select which of those was the true model?
+
+## Naive approach, via an estimate $\hat\tau$
+
+Given an observed vector $\mathrm{x}$, we can estimate its precision as the precision which maximizes
+$\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$.
+This is the [Maximum Likelihood Estimate (MLE)](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation):
 
 $$
-\hat\theta
+\hat\tau
 =
-\underset{\theta}{\operatorname{argmax}}{~} \mathrm{P}(\mathbf{x} | H_\theta)
+\underset{\tau}{\operatorname{argmax}}{~} \mathrm{P}(\mathbf{x} | H_{\tau^{-1}})
 ~~~~~~~~~~
 $$
 $$
 =
-\underset{\theta}{\operatorname{argmax}}{~}
-\prod_{i=1}^n \mathcal{N}( x_i ; 0,\theta )
+\underset{\tau}{\operatorname{argmax}}{~}
+\prod_{i=1}^n \mathcal{N}( x_i ; 0,{\tau^{-1}} )
 $$
+$$
+=
+\frac{n}{ \sum_{i=1}^n x_i^2 } ~~~~~~~~~~~~~~~~~~~~~~
+$$
+(The last expression above is simply the inverse of the variance estimate $\hat\sigma^2 = \frac{1}{n} \sum_{i=1}^n x_i^2$
 
-As we can't compute the exact $\mathrm{P}(\mathbf{x} | H_\theta)$,
-we instead estimate it via $\mathrm{P}(\mathbf{x} | H_{\hat\theta})$.
+As we can't compute the exact $\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$,
+we instead estimate it by using $\hat\tau^{-1}$.
+
+$$
+\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}}) = \prod_{i=1}^n \mathcal{N}( x_i ; 0,\hat\tau^{-1} )
+$$
 
 **Note that I use $\mathrm{\hat{P}}$ to emphasize that this is merely an estimate
 of the probability density.**
-
-$$
-\mathrm{\hat{P}}(\mathbf{x} | H_\theta) = \mathrm{P}(\mathbf{x} | H_{\hat\theta})
-$$
 
 It would be tempting now to compare
 $\mathrm{\hat{P}}(\mathbf{x} | H_\theta)$
@@ -144,11 +160,6 @@ But this post is about another approach.
 ## priors
 
 How do we resolve this, and use an estimate $\mathrm{P}(\mathbf{x} | H_\theta)$ that is less biased?
-
-Before proceeding, let's define $\tau = \frac1{\sigma^2}$, the inverse of the *variance*.
-This is known as the *precision* and is often easier to work with mathematically.
-We can now refer to a Normal distribution as $\mathcal{N}(\mu,\tau^{-1})$,
-which is equivalent to $\mathcal{N}(\mu,\sigma^2)$.
 
 We don't know the true $\tau$, but let's assume we know it was drawn from a
 Gamma distribution:

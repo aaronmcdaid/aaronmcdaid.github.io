@@ -119,8 +119,24 @@ $(document).ready(function () {
 </div>
 
 
+<p> </p>
+<div style="border:1px solid black ; text-align:center">
+<h1 id="aaron-mcdaid"><a href="https://aaronmcdaid.github.io/">Aaron McDaid</a></h1>
+<p>Statistics and C++, and other fun projects</p>
+<p><code>aaron.mcdaid@gmail.com</code></p>
+<p><a href="https://twitter.com/aaronmcdaid"><code>@aaronmcdaid</code></a></p>
+</div>
+<div id="section" class="section level1">
+<h1> </h1>
+</div>
 <div id="countdown-solver-written-in-haskell" class="section level1">
-<h1>Countdown solver, written in Haskell</h1>
+<h1><em>Countdown solver, written in Haskell</em></h1>
+<div style="text-align:right">
+<p><strong><em>by Aaron, 29th October 2017</em></strong></p>
+</div>
+</div>
+<div id="section-1" class="section level1">
+<h1> </h1>
 <p>I loved the British game show <a href="https://en.wikipedia.org/wiki/Countdown_(game_show)"><em>Countdown</em></a> as a child, which is based on <a href="https://en.wikipedia.org/wiki/Des_chiffres_et_des_lettres"><em>Des chiffres et des lettres</em></a>. My first attempt at a non-trivial C program was, if I remember correctly, and attempt to solve the “Numbers Round” on Countdown.</p>
 <p>Given a target number, and six input numbers, the goal is to combine the inputs using only addition, subtraction, multiplication and division and reach the target value. For example, given target <span class="math inline">\(562\)</span> and inputs <span class="math inline">\(9,8,2,10,4,4\)</span></p>
 <p><span class="math display">\[
@@ -129,6 +145,7 @@ $(document).ready(function () {
 <p>Let’s assume, for now, that each input must be used once, and only once, in the expression. In reality, it is not necessary to use them all and I will describe that near the end of this post.</p>
 <p>I’ll call this pair, the target and the inputs, a <em>game</em>. A given game may have many solutions, or even zero solutions.</p>
 <p>In this post, I’ll describe a program written in <a href="https://en.wikipedia.org/wiki/Haskell_(programming_language)">Haskell</a>. I don’t claim to be an expert in Haskell; this is just a bit of fun. I’ve recently become much more interested in it via the <a href="https://www.meetup.com/Haskell-Dublin-Meetup/">Haskell Dublin Meetup</a>.</p>
+<p>Any feedback appreciated! <code>aaron.mcdaid@gmail.com</code> or Twitter: <a href="https://twitter.com/aaronmcdaid"><code>@aaronmcdaid</code></a></p>
 <div id="expressions" class="section level2">
 <h2>Expressions</h2>
 <p>At first, let’s consider using just two inputs, instead of the six that are allowed in the real game show. That gives us four expressions, where <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> will take the place of the inputs</p>

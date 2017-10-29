@@ -1,4 +1,24 @@
-# Countdown solver, written in Haskell
+&nbsp;
+
+<div style="border:1px solid black ; text-align:center">
+
+# [Aaron McDaid](https://aaronmcdaid.github.io/)
+
+Statistics and C++, and other fun projects
+
+`aaron.mcdaid@gmail.com`
+
+[`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+</div>
+
+# &nbsp;
+
+# *Countdown solver, written in Haskell*
+<div style="text-align:right">
+***by Aaron, 29th October 2017***
+</div>
+
+# &nbsp;
 
 I loved the British game show [*Countdown*](https://en.wikipedia.org/wiki/Countdown_(game_show)) as a child,
 which is based on [*Des chiffres et des lettres*](https://en.wikipedia.org/wiki/Des_chiffres_et_des_lettres).
@@ -16,6 +36,8 @@ Let's assume, for now, that each input must be used once, and only once, in the 
 I'll call this pair, the target and the inputs, a *game*. A given game may have many solutions, or even zero solutions.
 
 In this post, I'll describe a program written in [Haskell](https://en.wikipedia.org/wiki/Haskell_(programming_language)). I don't claim to be an expert in Haskell; this is just a bit of fun. I've recently become much more interested in it via the [Haskell Dublin Meetup](https://www.meetup.com/Haskell-Dublin-Meetup/).
+
+Any feedback appreciated! `aaron.mcdaid@gmail.com` or Twitter: [`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
 
 ## Expressions
 

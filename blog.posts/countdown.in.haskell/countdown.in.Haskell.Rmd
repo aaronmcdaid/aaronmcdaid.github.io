@@ -278,3 +278,101 @@ Each of those items in the list above is either something to loop over (`e2`,`e1
 (or
 `ExprF (Factors e1 multiplyOrDivide e2)`
  when computing all the factor-expressions) and return the entire list.
+
+# Evaluating an expression with a given set of inputs
+
+With an expression $a+b \times c$ and inputs `[10,30,100]` we "fill" the expression to get a "filled-expression"
+$$ 10+30 \times 100 $$
+with value $3010$.
+Bear in mind that we only allow integer division in this game. And therefore, we cannot fill
+$a \div b$ with inputs `[5,2]` as $\frac52$ is not an integer and we cannot allow division by zero either.
+Therefore, our `eval` function doesn't return `Int` for the value; instead it returns `Maybe Int` (known as Optional Int, or similar, in other programming languages).
+```
+eval :: [Int] -> Expr -> Maybe Int
+--        |       |          |
+--        |       |          `------ returned Int, or 'Nothing' if there was a division problem
+--        |       `----------------- expression to evaluate
+--        `------------------------- a list of integers to take the place of 'a' to 'f' in the expression
+```
+
+We must deal with each of the three kinds of expression. For those not familiar with Haskell's `do` notation, I will not attempt to explain its many varied and wonderful uses! But, in the context of a function returning `Maybe Int`, it allows us to 'see through' the `Maybe` and just directly perform operations on the contained `Int`s:
+```
+eval is (Single (Letter l))                  = do
+                                        return (is !! (letter2offset l))
+```
+Next the Term-expression, simply add or subtract. But, remember that `eval is e1` and `eval is e2` may be `Nothing` (if there a division problem in the sub-expression), in which case the `do` will automatically *short-circuit* as the `<-` will fail to extract and `Int` from the `Maybe Int`, and therefore we simply return `Nothing` without attemping to do any addition or subtraction:
+```
+eval is (ExprT (Terms   e1 addOrSubtract e2))   = do
+                                            t1 <- eval is e1
+                                            t2 <- eval is e2
+                                            case addOrSubtract of
+                                                Add -> return (t1+t2)
+                                                Sub -> return (t1-t2)
+```
+Multiplication is straightforward:
+```
+eval is (ExprF (Factors e1 Mul e2))   = do
+                                            f1 <- eval is e1
+                                            f2 <- eval is e2
+                                            return (f1*f2)
+```
+However, division must be treated specially. If the second expression (the number to divide by) is zero, or it does not divide evenly into the numerator,
+then the `guard` will force the *short-circuit* to occur and return `Nothing`:
+```
+eval is (ExprF (Factors e1 Div e2))   = do
+                                            f1 <- eval is e1
+                                            f2 <- eval is e2
+                                            guard $ f2 /= 0
+                                            guard ( f1 `mod` f2 == 0 )
+                                            return (f1 `div` f2)
+```
+
+## Bringing it all together
+
+We can now bring everything together, attemping to "fill in" every possible expression with the inputs and testing if the `eval`-uated result equals our target.
+Remember I said earlier that we don't actually need to use all six inputs exactly one each? We are allowed to use a subset instead if we wish.
+With a target of $4$ and inputs $(1,2,3)$ we are entitled to use $4=1+3$ and ignore the $2$.
+Therefore, we do another partitioning, simply dividing the list into those that we will use and those we will not use:
+```
+allPartialExprs :: [Letter] -> [Expr]
+allPartialExprs ls  =   [ es
+                        | (used, ignored) <- allPartitions ls
+                        , not . null $ used
+                        , es <- allExprs used
+                        ]
+```
+which is then called by `findSolutions`:
+```
+findSolutions target inputs =   do
+        let range_of_chars = ['a' .. (toEnum . (subtract 1) . (+ (length inputs)) . fromEnum $ 'a')]
+        -- if (length inputs == 6), then range_of_chars will be ['a'..'f']
+        e <- allPartialExprs $ map Letter range_of_chars
+        guard . (== (Just target))  $ (eval inputs e)
+        return (e, showWithInputs inputs e)
+```
+For each successful solution, `findSolutions` returns the raw `Expr` object as well as a nice string represenation of the expression "filled-in" with the inputs.
+Finally, a nice demo where it's all printed nicely:
+```
+findSolutionsAndPrintThemNicely target inputs =
+    findSolutions target inputs &
+                mapM (\(e,filledIn) ->
+                    do
+                        let showe = show e
+                        let padding = replicate (24 - length showe) ' '
+                        putStrLn (padding ++ showe ++ " " ++ filledIn)
+                )
+
+main = do
+    findSolutionsAndPrintThemNicely 562 [9,8,2,4,10,4]
+```
+This gives hundreds of solutions, here are a few:
+```
+           (a*b*c*d-e-f) (9*8*2*4-10-4)
+           (a*b*d*c-f-e) (9*8*4*2-4-10)
+           (a*c*f*b-d-e) (9*2*4*8-4-10)
+           (b*c*f*a-e-d) (8*2*4*9-10-4)
+       ((e+f)*(a-d)*b+c) ((10+4)*(9-4)*8+2)
+         (c+(d*f-a)*b*e) (2+(4*4-9)*8*10)
+       (c+(a-f)*(d+e)*b) (2+(9-4)*(4+10)*8)
+       (c-(e+f)*b*(d-a)) (2-(10+4)*8*(4-9))
+```

@@ -315,7 +315,76 @@ allExprs ls =   [ ExprT (Terms e1 addOrSubtract e2)
 <li><code>, e1 &lt;- allExprs l</code> - recursively call <code>allExprs</code> with the left-hand-side.</li>
 <li><code>, addOrSubtract &lt;- [Add, Sub]</code> - to try both possibilities</li>
 </ol>
-<p>Each of those items in the list above is either something to loop over (<code>e2</code>,<code>e1</code>, or <code>addOrSubtract</code>) or a condition to skip over some of those. For every combination that is acceptable, we evaluate <code>ExprT (Terms e1 addOrSubtract e2)</code> (or <code>ExprF (Factors e1 multiplyOrDivide e2)</code> when computing all the factor-expressions) and return the entire list</p>
+<p>Each of those items in the list above is either something to loop over (<code>e2</code>,<code>e1</code>, or <code>addOrSubtract</code>) or a condition to skip over some of those. For every combination that is acceptable, we evaluate <code>ExprT (Terms e1 addOrSubtract e2)</code> (or <code>ExprF (Factors e1 multiplyOrDivide e2)</code> when computing all the factor-expressions) and return the entire list.</p>
+</div>
+</div>
+<div id="evaluating-an-expression-with-a-given-set-of-inputs" class="section level1">
+<h1>Evaluating an expression with a given set of inputs</h1>
+<p>With an expression <span class="math inline">\(a+b \times c\)</span> and inputs <code>[10,30,100]</code> we “fill” the expression to get a “filled-expression” <span class="math display">\[ 10+30 \times 100 \]</span> with value <span class="math inline">\(3010\)</span>. Bear in mind that we only allow integer division in this game. And therefore, we cannot fill <span class="math inline">\(a \div b\)</span> with inputs <code>[5,2]</code> as <span class="math inline">\(\frac52\)</span> is not an integer and we cannot allow division by zero either. Therefore, our <code>eval</code> function doesn’t return <code>Int</code> for the value; instead it returns <code>Maybe Int</code> (known as Optional Int, or similar, in other programming languages).</p>
+<pre><code>eval :: [Int] -&gt; Expr -&gt; Maybe Int
+--        |       |          |
+--        |       |          `------ returned Int, or 'Nothing' if there was a division problem
+--        |       `----------------- expression to evaluate
+--        `------------------------- a list of integers to take the place of 'a' to 'f' in the expression</code></pre>
+<p>We must deal with each of the three kinds of expression. For those not familiar with Haskell’s <code>do</code> notation, I will not attempt to explain its many varied and wonderful uses! But, in the context of a function returning <code>Maybe Int</code>, it allows us to ‘see through’ the <code>Maybe</code> and just directly perform operations on the contained <code>Int</code>s:</p>
+<pre><code>eval is (Single (Letter l))                  = do
+                                        return (is !! (letter2offset l))</code></pre>
+<p>Next the Term-expression, simply add or subtract. But, remember that <code>eval is e1</code> and <code>eval is e2</code> may be <code>Nothing</code> (if there a division problem in the sub-expression), in which case the <code>do</code> will automatically <em>short-circuit</em> as the <code>&lt;-</code> will fail to extract and <code>Int</code> from the <code>Maybe Int</code>, and therefore we simply return <code>Nothing</code> without attemping to do any addition or subtraction:</p>
+<pre><code>eval is (ExprT (Terms   e1 addOrSubtract e2))   = do
+                                            t1 &lt;- eval is e1
+                                            t2 &lt;- eval is e2
+                                            case addOrSubtract of
+                                                Add -&gt; return (t1+t2)
+                                                Sub -&gt; return (t1-t2)</code></pre>
+<p>Multiplication is straightforward:</p>
+<pre><code>eval is (ExprF (Factors e1 Mul e2))   = do
+                                            f1 &lt;- eval is e1
+                                            f2 &lt;- eval is e2
+                                            return (f1*f2)</code></pre>
+<p>However, division must be treated specially. If the second expression (the number to divide by) is zero, or it does not divide evenly into the numerator, then the <code>guard</code> will force the <em>short-circuit</em> to occur and return <code>Nothing</code>:</p>
+<pre><code>eval is (ExprF (Factors e1 Div e2))   = do
+                                            f1 &lt;- eval is e1
+                                            f2 &lt;- eval is e2
+                                            guard $ f2 /= 0
+                                            guard ( f1 `mod` f2 == 0 )
+                                            return (f1 `div` f2)</code></pre>
+<div id="bringing-it-all-together" class="section level2">
+<h2>Bringing it all together</h2>
+<p>We can now bring everything together, attemping to “fill in” every possible expression with the inputs and testing if the <code>eval</code>-uated result equals our target. Remember I said earlier that we don’t actually need to use all six inputs exactly one each? We are allowed to use a subset instead if we wish. With a target of <span class="math inline">\(4\)</span> and inputs <span class="math inline">\((1,2,3)\)</span> we are entitled to use <span class="math inline">\(4=1+3\)</span> and ignore the <span class="math inline">\(2\)</span>. Therefore, we do another partitioning, simply dividing the list into those that we will use and those we will not use:</p>
+<pre><code>allPartialExprs :: [Letter] -&gt; [Expr]
+allPartialExprs ls  =   [ es
+                        | (used, ignored) &lt;- allPartitions ls
+                        , not . null $ used
+                        , es &lt;- allExprs used
+                        ]</code></pre>
+<p>which is then called by <code>findSolutions</code>:</p>
+<pre><code>findSolutions target inputs =   do
+        let range_of_chars = ['a' .. (toEnum . (subtract 1) . (+ (length inputs)) . fromEnum $ 'a')]
+        -- if (length inputs == 6), then range_of_chars will be ['a'..'f']
+        e &lt;- allPartialExprs $ map Letter range_of_chars
+        guard . (== (Just target))  $ (eval inputs e)
+        return (e, showWithInputs inputs e)</code></pre>
+<p>For each successful solution, <code>findSolutions</code> returns the raw <code>Expr</code> object as well as a nice string represenation of the expression “filled-in” with the inputs. Finally, a nice demo where it’s all printed nicely:</p>
+<pre><code>findSolutionsAndPrintThemNicely target inputs =
+    findSolutions target inputs &amp;
+                mapM (\(e,filledIn) -&gt;
+                    do
+                        let showe = show e
+                        let padding = replicate (24 - length showe) ' '
+                        putStrLn (padding ++ showe ++ &quot; &quot; ++ filledIn)
+                )
+
+main = do
+    findSolutionsAndPrintThemNicely 562 [9,8,2,4,10,4]</code></pre>
+<p>This gives hundreds of solutions, here are a few:</p>
+<pre><code>           (a*b*c*d-e-f) (9*8*2*4-10-4)
+           (a*b*d*c-f-e) (9*8*4*2-4-10)
+           (a*c*f*b-d-e) (9*2*4*8-4-10)
+           (b*c*f*a-e-d) (8*2*4*9-10-4)
+       ((e+f)*(a-d)*b+c) ((10+4)*(9-4)*8+2)
+         (c+(d*f-a)*b*e) (2+(4*4-9)*8*10)
+       (c+(a-f)*(d+e)*b) (2+(9-4)*(4+10)*8)
+       (c-(e+f)*b*(d-a)) (2-(10+4)*8*(4-9))</code></pre>
 </div>
 </div>
 

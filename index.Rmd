@@ -17,10 +17,15 @@ Statistics and C++, and other fun projects
 [`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
 </div>
 
+&nbsp;
+
 Recent posts:
 
+1.  [*Unit information priors and model selection*](blog.posts/unit.information.priors/) - 30th Oct 2017
 1.  [*Countdown solver, written in Haskell*](blog.posts/countdown.in.haskell/) - 29th Oct 2017
-2.  [*Unit information priors and model selection*](blog.posts/unit.information.priors/) - 30th Oct 2017
+1.  (not so recent) [MCMC algorithm visualized for clustering](demos/mvnMCMC/mvnMCMC.html) - 2016/2017 - I really should complete this and write it up nicely ...
+
+&nbsp;
 
 I'll write about statistics and programming languages, usually C++.
 Really, I'll just try to document the fun stuff I'm working on, as well as more 'sensible'

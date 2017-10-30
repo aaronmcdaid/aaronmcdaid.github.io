@@ -2,6 +2,10 @@
 title: "*Countdown solver, written in Haskell*"
 ---
 
+<style type="text/css">
+body{ font-size: 16px; }
+</style>
+
 &nbsp;
 
 <div style="border:1px solid black ; text-align:center">

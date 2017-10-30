@@ -110,15 +110,15 @@ Given a dataset which we know was drawn from $H_1$ or $H_{\tau^{-1}}$, how do we
 
 ## Naive approach, via an estimate $\hat\tau$
 
-Given an observed vector $\mathrm{x}$, we can estimate its precision as the precision which maximizes
-$\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$.
+Given an observed vector $\mathrm{x}$, we can estimate its precision as the precision, $\hat\tau$, which maximizes
+$\mathrm{P}(\mathbf{x} | H_{\hat\tau^{-1}})$.
 This is the [Maximum Likelihood Estimate (MLE)](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation):
 
 $$
 \hat\tau
 =
 \underset{\tau}{\operatorname{argmax}}{~} \mathrm{P}(\mathbf{x} | H_{\tau^{-1}})
-~~~~~~~~~~
+~~~~~~~~~~~
 $$
 $$
 =
@@ -127,14 +127,15 @@ $$
 $$
 $$
 =
-\frac{n}{ \sum_{i=1}^n x_i^2 } ~~~~~~~~~~~~~~~~~~~~~~
+\frac{n}{ \sum_{i=1}^n x_i^2 } ~~~~~~~~~~~~~~~~~~~~~~~~~
 $$
 (The last expression above is simply the inverse of the variance estimate $\hat\sigma^2 = \frac{1}{n} \sum_{i=1}^n x_i^2$
 
-As we can't compute the exact $\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$,
+As we can't compute the exact $\mathrm{P}_{\tau^{-1}}$,
 we instead estimate it by using $\hat\tau^{-1}$.
 
 $$
+\mathrm{\hat{P}}_{mle} =
 \mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}}) = \prod_{i=1}^n \mathcal{N}( x_i ; 0,\hat\tau^{-1} )
 $$
 
@@ -142,18 +143,18 @@ $$
 of the probability density.***
 
 It would be tempting now to compare
-$\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}})$
+$\mathrm{\hat{P}}_{mle}$
 to
-$\mathrm{     P }(\mathbf{x} | H_1)$
-and use that to decide whether to select $H_1$ or $H_{\hat\tau^{-1}}$.
-However, that technique is guaranteed to always select $H_{\hat\tau^{-1}}$!
+$\mathrm{     P }_1$
+and use that to decide whether to select $H_{\hat\tau^{-1}}$ or $H_1$.
+However, that technique is guaranteed to always select $H_{\hat\tau^{-1}}$.
 
 By construction, the $\hat\tau^{-1}$ is the value which maximizes the likelihood and
 therefore the likelihood under $\sigma^2 = \hat\tau^{-1}$ is guaranteed to be at least
 as large as that under $H_1$:
 
 $$
-\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}}) > \mathrm{     P }(\mathbf{x} | H_1)
+\mathrm{\hat{P}}_{mle} > \mathrm{     P }_1
 $$
 (Equality is not possible in that, as $\hat\tau^{-1}$ will never be exactly equal to $1$)
 
@@ -165,7 +166,7 @@ is a very biased estimate of that and therefore can't be used as is.
 
 Before proceeding, I should note that the [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
 or [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) can be used to adjust
-these estimates and reduce the bias. Go head and read those links, they are interesting!
+these estimates and reduce the bias. Go ahead and read up on those, they are interesting!
 But this post is about another approach.
 
 
@@ -181,12 +182,17 @@ $$
 
 If $\alpha$ and $\beta$ are known, we can compute the integral over $\tau$:
 $$
+\mathrm{P}_{exact} =
 \mathrm{P}_\tau(\mathbf{x} ) = \int \mathrm{P}(\mathbf{x} | H_{\tau^{-1}}) \mathrm{P}(\tau) ~\mathrm{d}\tau
 $$
 
-We can then compare $\mathrm{P}_\tau(\mathbf{x})$ to $\mathrm{P}(\mathbf{x}|H_1)$ as usual.
+We can then compare $\mathrm{P}_{exact}$ to $\mathrm{P}_1$ as usual.
+I call it "*exact*" because, if we do know the true distribution from which $\tau$ was drawn,
+then we essentially have a point hypothesis again.
 
-In practice, we compute that integral in the code below via the following equation, with $\tau$ on the right hand side replaced by an arbitrary value:
+A brief note on computation, relevant to understanding the code below: In practice, we compute that integral in the code below via the following equation, with $\tau$ on the right hand side replaced by an arbitrary value:
+The denominator here, and the right hand factor in the numerator, are the density of the
+arbitrary $\tau$ under, respectively, the Gamma prior and the Gamma posterior.
 $$
 \mathrm{P}(\mathbf{x})
 =
@@ -214,15 +220,15 @@ $$
 \tau|\mathbf{x} ~~ \sim ~~ \mathrm{Gamma}\left( \alpha + \frac{n}2, \beta + \frac12 \sum_{i=1}^n x_i^2 \right)
 $$
 
-The effect of the $n$ observations on $\alpha$ is to add $\frac{n}2$.
+The effect of the $n$ observations on $\alpha$ is to add $\frac{n}2$ to it.
 Therefore, the effect of a single observation (*unit information*) is to add $\frac12$ to $\alpha$.
 Similarly, $\frac1{2n} \sum_{i=1}^n x_i^2$ is added to $\beta$ by one observation.
-We could define the *zero information prior* as $\mathrm{Gamma}(0,0)$ (useless as a prior, as it is [*improper*](https://en.wikipedia.org/wiki/Prior_probability#Improper_priors)).
+We define the *zero information prior* as $\mathrm{Gamma}(0,0)$ (useless as a prior, as it is [*improper*](https://en.wikipedia.org/wiki/Prior_probability#Improper_priors)).
 The *unit information prior (UIP)* is then defined as adding the effect of one observation to the zero information prior:
 $$\tau ~~ \sim ~~ \mathrm{Gamma}\left(  \frac12, \frac1{2n} \sum_{i=1}^n x_i^2 \right)$$
 and therefore we use
 $\alpha=\frac12$ and $\beta = \frac1{2n} \sum_{i=1}^n x_i^2$ as our prior.
-Note that prior does depend on the observed data. However, it is a relatively diffuse prior as it's based on the average effect of one observation instead of the combined effect of $n$ observations.
+Note that this prior does indeed depend on the observed data. However, it is a relatively diffuse prior as it's based on the average effect of one observation instead of the combined effect of $n$ observations.
 
 # Simulations
 
@@ -230,21 +236,21 @@ To evaluate this method on these two simple models, we will do some simulations.
 I draw 1000 different $\tau$ from a $\mathrm{Gamma}(1,1)$, and then draw a
 sample ($n=200$) for each $\tau$. I compute four log-likelihoods for each:
 
-1. $\mathrm{P}(\mathbf{x} | H_1)$ - assuming Hypothesis 1 is true, i.e. $\tau = 1   = \sigma^2$
-1. $\mathrm{P}(\mathbf{x} | H_2)$ - assuming Hypothesis 1 is true, i.e. $\tau = 0.5;  \sigma^2 = 2$
-1. $\mathrm{P}(\mathbf{x} | H_{mle})$ - assuming the true variance equals the MLE estimate in the sample.
-1. $\mathrm{P}(\mathbf{x} | H_{uip})$ - log-likelihood, after interesting over our unit information prior.
-1. $\mathrm{P}(\mathbf{x} | H_{exact})$ - log-likelihood, after interesting over the "true" prior, $\mathrm{Gamma}(1,1)$
+1. $\mathrm{P}_1$ - assuming Hypothesis 1 is true, i.e. $\tau = 1   = \sigma^2$
+1. $\mathrm{P}_2$ - assuming Hypothesis 2 is true, i.e. $\tau = 0.5;  \sigma^2 = 2$
+1. $\mathrm{P}_{mle}$ - assuming the true variance equals the MLE estimate in the sample.
+1. $\mathrm{P}_{uip}$ - log-likelihood, after integrating over our unit information prior.
+1. $\mathrm{P}_{exact}$ - log-likelihood, after integrating over the "true" prior, $\mathrm{Gamma}(1,1)$
 
 In all the plots below, the true $\tau$ is on the x-axis.
 The interesting thing in each plot is to see when the does cross the horizontal
 line at $y=0$, as that is where the ratio of the (integrated) likelihoods is $1.0$.
 This line decides which model has been selected.
+Below that line means $H_1$ has been selected. Above means $H_1$ has been rejected.
 
-First, we define the function `a.few.loglikelihoods` which takes a sample as input
+On to the code: We define the function `a.few.loglikelihoods` which takes a sample as input
 and computes those five log-likelihoods and returns them.
-
-I make heavy use of the `data.table` package in `R`, by the way.
+In this code, I make heavy use of the `data.table` package in `R`.
 That's an excellent package, with an [excellent concise video tutorial](https://www.datacamp.com/community/tutorials/data-table-r-tutorial).
 
 ```{r}
@@ -317,26 +323,28 @@ print(d)
 
 # Plots and analysis
 
-Now that the data has been prepared above, we close a few plots to show which model is selected.
+Now that the data has been prepared above, we close with a few plots to show which model is selected.
+Each plot compares $H_1$ with one of the other four.
 The final figure confirms that the integrated log-loglikelihood based on the unit information
-prior, $H_{uip}$, doesn't have the extreme bias of using the MLE, $H_{mle}$.
-We know that $H_{exact}$ is the best possible in this case, as it uses the true distribution
+prior, $\mathrm{P}_{uip}$, doesn't have the extreme bias of using the MLE, $\mathrm{P}_{mle}$.
+
+We know that $\mathrm{P}_{exact}$ is the best possible in this case, as it uses the true distribution
 of $\tau$ and therefore the Neyman-Pearson Lemma applies directly.
-In the last two plots, we can see that $H_{exact}$ and $H_{uip}$ get very similar results,
-confirming that $H_{uip}$ maintains good accuracy despite not knowing the true prior for $\tau$,
+In the last two plots, we can see that $\mathrm{P}_{exact}$ and $\mathrm{P}_{uip}$ get very similar results,
+confirming that $\mathrm{P}_{uip}$ maintains good accuracy despite not knowing the true prior for $\tau$,
 which was $\mathrm{Gamma}(1,1)$.
 
 ### Figure 1
 
 In Figure 1, we see that
-the log-ratio is always positive comparing $H_{mle}$ to $H_1$, which confirms that $H_{mle}$ is not useful.
+the log-ratio is always positive comparing $\mathrm{P}_{mle}$ to $\mathrm{P}_1$, which confirms that $\mathrm{P}_{mle}$ is not useful;
+it always rejects $H_1$ even when $\tau$ is very close to 1.
 
 ```{r fig.align='center'}
-d[tau >= 0.1 & tau <= 10.0,{
+d[tau >= 0.2 & tau <= 5.0,{
     plot(   tau ,   P_x_Hmle - P_x_H1
-        ,   xlab = expression(tau) ,   ylab = expression('log-ratio of ' * H[mle] * ' and ' * H[1])
-        ,   log='x',   main = 'Figure 1'
-        )
+        ,   xlab = expression(tau) ,   ylab = expression('log-ratio of ' * P[mle] * ' and ' * P[1])
+        ,   log='x',   main = 'Figure 1')
     abline(h=0, col='grey')
 }] %>% invisible
 ```
@@ -348,7 +356,7 @@ The two vertical grey lines at 0.5 and 1.0 represent when $H_2$ and $H_1$, respe
 ```{r fig.align='center'}
 d[tau >= 0.25 & tau < 2.0,{
     plot(   tau,   P_x_H2-P_x_H1
-        ,   xlab = expression(tau) ,   ylab = expression('log-ratio of ' * H[2] * ' and ' * H[1])
+        ,   xlab = expression(tau) ,   ylab = expression('log-ratio of ' * P[2] * ' and ' * P[1])
         ,   log='x',   main='Figure 2'
         )
     abline(h=0, col='grey')
@@ -360,17 +368,16 @@ d[tau >= 0.25 & tau < 2.0,{
 ### Figure 3
 
 Using the "exact" prior, which is cheating.
-As expected, $H_1$, is selected (y-axis < 0) when $\tau$
+As expected, $H_1$ is selected (y-axis < 0) when $\tau$
 is close to 1.0 and the rejected (y-axis > 0) when $\tau$ is far from 1.0.
 
 ```{r fig.align='center'}
 d[
   tau >= 0.5 & tau < 2.0
   ,{
-    plot(   c(1,NA,tau)
-        ,   c(NA,0,P_x_Hexact - P_x_H1)
+    plot(   tau,   P_x_Hexact - P_x_H1
         ,   xlab = expression(tau)
-        ,   ylab = expression('log-ratio of ' * H[exact] * ' and ' * H[1])
+        ,   ylab = expression('log-ratio of ' * P[exact] * ' and ' * P[1])
         ,   log='x', main='Figure 3'
         )
     abline(h=0, col='grey')
@@ -390,7 +397,7 @@ d[
   ,{
     plot(   tau ,   P_x_Huip - P_x_H1
         ,   xlab = expression(tau)
-        ,   ylab = expression('log-ratio of ' * H[uip] * ' and ' * H[1])
+        ,   ylab = expression('log-ratio of ' * P[uip] * ' and ' * P[1])
         ,   log='x', main = 'Figure 4'
         )
     abline(h=0, col='grey')

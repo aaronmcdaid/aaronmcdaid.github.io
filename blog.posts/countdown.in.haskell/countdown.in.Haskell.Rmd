@@ -1,3 +1,7 @@
+---
+title: "*Countdown solver, written in Haskell*"
+---
+
 &nbsp;
 
 <div style="border:1px solid black ; text-align:center">
@@ -13,9 +17,10 @@ Statistics and C++, and other fun projects
 
 # &nbsp;
 
-# *Countdown solver, written in Haskell*
 <div style="text-align:right">
 ***by [Aaron](https://aaronmcdaid.github.io/), 29th October 2017***
+
+[(code for this document)](index.Rmd)
 </div>
 
 # &nbsp;

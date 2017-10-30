@@ -212,7 +212,7 @@ The *unit information prior (UIP)* is then defined as adding the effect of one o
 $$\tau ~~ \sim ~~ \mathrm{Gamma}\left(  \frac12, \frac1{2n} \sum_{i=1}^n x_i^2 \right)$$
 and therefore we use
 $\alpha=\frac12$ and $\beta = \frac1{2n} \sum_{i=1}^n x_i^2$ as our prior.
-Note that prior does depend on one observed data. However, it is a relatively diffuse prior as it's based on the average effect of one observation instead of the combined effect of $n$ observations.
+Note that prior does depend on the observed data. However, it is a relatively diffuse prior as it's based on the average effect of one observation instead of the combined effect of $n$ observations.
 
 # Simulations
 
@@ -221,7 +221,7 @@ To evaluate this method on these two simple models, we will do some simulations
 ```{r}
 set.seed(1337)
 n=1000
-x = rnorm(n, mean=0, sd=sqrt(5))
+x = rnorm(n, mean=0, sd=sqrt(1))
 plot(density(x))
 a.few.likelihoods <- function(x) {
     stopifnot(n==length(x))
@@ -229,9 +229,25 @@ a.few.likelihoods <- function(x) {
     P_x_H1 = sum(dnorm(x, mean=0, sd=1, log=T))   # H_1
     P_x_H2 = sum(dnorm(x, mean=0, sd=sqrt(2), log=T))   # H_2
     P_x_Hmle = sum(dnorm(x, mean=0, sd=sqrt(mle_var), log=T))   # H_mle
+    # compute the UIP parameters for the Gamma prior
+    alpha_prior = 1/2 # alpha is 'shape' in {r,g,p}gamma
+    beta_prior = mle_var / 2 # 1/(2*n) * sum(x^2) # beta is 'rate' in {r,g,p}gamma
+    #stopifnot(mle_var / 2 == 1/(2*n) * sum(x^2) ) # kinda obvious, just making sure I rearranged them correctly
+    alpha_posterior = alpha_prior + n/2
+    beta_posterior = beta_prior + 1/2 * sum(x^2)
+
+    # to compute the integrated likelihood, integrate over all tau,
+    # we can just take an arbitrary one, as discussed above
+    tau_arbitrary = 1
+    P_x_uip =   (   sum(dnorm(x, mean=0, sd=sqrt(1/tau_arbitrary), log=T))
+                +   dgamma(tau_arbitrary, shape=alpha_prior    , rate=beta_prior    , log=T)
+                -   dgamma(tau_arbitrary, shape=alpha_posterior, rate=beta_posterior, log=T)
+                )
+
     data.table  (   P_x_H1
                 ,   P_x_H2
                 ,   P_x_Hmle
+                ,   P_x_uip
                 )
 }
 pp(a.few.likelihoods(x))

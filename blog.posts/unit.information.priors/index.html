@@ -242,7 +242,9 @@ $(document).ready(function () {
 <p>First, we define the function <code>a.few.loglikelihoods</code> which takes a sample as input and computes those five log-likelihoods and returns them.</p>
 <p>I make heavy use of the <code>data.table</code> package in <code>R</code>, by the way. That’s an excellent package, with an <a href="https://www.datacamp.com/community/tutorials/data-table-r-tutorial">excellent concise video tutorial</a>.</p>
 <pre class="r"><code>set.seed(1337)
-n=200
+library(data.table)
+library(magrittr)   # for %&gt;%</code></pre>
+<pre class="r"><code>n=200
 a.few.loglikelihoods &lt;- function(x) {
     stopifnot(n==length(x))
     mle_var = mean(x*x)
@@ -285,38 +287,34 @@ a.few.loglikelihoods &lt;- function(x) {
                 )
 }
 
+# Generate 1000 taus, from the true prior, Gamma(1,1)
 many.taus = rgamma(1000, 1,1)
+
+# For each tau, generate a sample with that precision (1/variance) equal to tau.
+# Also, compute all the likelihoods and store it all in a table
+
 lapply(many.taus, function(tau) {
     x = rnorm(n, mean=0, sd=sqrt(1/tau))
     data.table(tau=tau, a.few.loglikelihoods(x))
 }) %&gt;%rbindlist -&gt; d
+
+# order the results by tau
 d = d[order(tau)]
-pp(d)</code></pre>
-<pre><code>## {{ d }}:
-##                     tau      P_x_H1      P_x_H2   P_x_Hmle   P_x_Huip
-##          1: 0.001217589 -67856.7186 -34089.5679 -935.51484 -938.31909
-##          2: 0.001927188 -45575.8489 -22949.1330 -895.57994 -898.38419
-##          3: 0.002053637 -44694.0337 -22508.2254 -893.61816 -896.42241
-##          4: 0.002146544 -49571.1073 -24946.7622 -904.01559 -906.81984
-##          5: 0.002420676 -42697.4766 -21509.9469 -889.02883 -891.83308
-##         ---                                                          
-##        996: 5.948476623   -200.3327   -261.3749 -103.87934 -106.68359
-##        997: 6.021871882   -199.0073   -260.7122  -95.52902  -98.33327
-##        998: 6.266078584   -198.5073   -260.4622  -92.18880  -94.99305
-##        999: 7.201577677   -199.8498   -261.1335 -100.91712 -103.72137
-##       1000: 7.251246896   -197.2877   -259.8524  -83.53991  -86.34416
-##             P_x_Hexact
-##          1: -943.41642
-##          2: -903.08290
-##          3: -901.10154
-##          4: -911.60272
-##          5: -896.46643
-##         ---           
-##        996: -109.39025
-##        997: -101.45652
-##        998:  -98.29419
-##        999: -106.57133
-##       1000:  -90.13759</code></pre>
+
+# print a few lines from 'd'
+print(d)</code></pre>
+<pre><code>##               tau      P_x_H1      P_x_H2   P_x_Hmle   P_x_Huip P_x_Hexact
+##    1: 0.001217589 -67856.7186 -34089.5679 -935.51484 -938.31909 -943.41642
+##    2: 0.001927188 -45575.8489 -22949.1330 -895.57994 -898.38419 -903.08290
+##    3: 0.002053637 -44694.0337 -22508.2254 -893.61816 -896.42241 -901.10154
+##    4: 0.002146544 -49571.1073 -24946.7622 -904.01559 -906.81984 -911.60272
+##    5: 0.002420676 -42697.4766 -21509.9469 -889.02883 -891.83308 -896.46643
+##   ---                                                                     
+##  996: 5.948476623   -200.3327   -261.3749 -103.87934 -106.68359 -109.39025
+##  997: 6.021871882   -199.0073   -260.7122  -95.52902  -98.33327 -101.45652
+##  998: 6.266078584   -198.5073   -260.4622  -92.18880  -94.99305  -98.29419
+##  999: 7.201577677   -199.8498   -261.1335 -100.91712 -103.72137 -106.57133
+## 1000: 7.251246896   -197.2877   -259.8524  -83.53991  -86.34416  -90.13759</code></pre>
 </div>
 <div id="plots-and-analysis" class="section level1">
 <h1>Plots and analysis</h1>

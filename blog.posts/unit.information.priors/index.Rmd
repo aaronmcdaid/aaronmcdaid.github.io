@@ -239,6 +239,10 @@ That's an excellent package, with an [excellent concise video tutorial](https://
 
 ```{r}
 set.seed(1337)
+library(data.table)
+library(magrittr)   # for %>%
+```
+```{r}
 n=200
 a.few.loglikelihoods <- function(x) {
     stopifnot(n==length(x))
@@ -283,13 +287,22 @@ a.few.loglikelihoods <- function(x) {
                 )
 }
 
+# Generate 1000 taus, from the true prior, Gamma(1,1)
 many.taus = rgamma(1000, 1,1)
+
+# For each tau, generate a sample with that precision (1/variance) equal to tau.
+# Also, compute all the likelihoods and store it all in a table
+
 lapply(many.taus, function(tau) {
     x = rnorm(n, mean=0, sd=sqrt(1/tau))
     data.table(tau=tau, a.few.loglikelihoods(x))
 }) %>%rbindlist -> d
+
+# order the results by tau
 d = d[order(tau)]
-pp(d)
+
+# print a few lines from 'd'
+print(d)
 ```
 
 # Plots and analysis

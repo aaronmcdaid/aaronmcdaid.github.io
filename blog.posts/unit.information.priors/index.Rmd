@@ -128,8 +128,8 @@ $$
 \mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}}) = \prod_{i=1}^n \mathcal{N}( x_i ; 0,\hat\tau^{-1} )
 $$
 
-**Note that I use $\mathrm{\hat{P}}$ to emphasize that this is merely an estimate
-of the probability density.**
+***Note that I use $\mathrm{\hat{P}}$ to emphasize that this is merely an estimate
+of the probability density.***
 
 It would be tempting now to compare
 $\mathrm{\hat{P}}(\mathbf{x} | H_{\hat\tau^{-1}})$
@@ -214,6 +214,28 @@ and therefore we use
 $\alpha=\frac12$ and $\beta = \frac1{2n} \sum_{i=1}^n x_i^2$ as our prior.
 Note that prior does depend on one observed data. However, it is a relatively diffuse prior as it's based on the average effect of one observation instead of the combined effect of $n$ observations.
 
+# Simulations
+
+To evaluate this method on these two simple models, we will do some simulations
+
+```{r}
+set.seed(1337)
+n=1000
+x = rnorm(n, mean=0, sd=sqrt(5))
+plot(density(x))
+a.few.likelihoods <- function(x) {
+    stopifnot(n==length(x))
+    mle_var = mean(x*x)
+    P_x_H1 = sum(dnorm(x, mean=0, sd=1, log=T))   # H_1
+    P_x_H2 = sum(dnorm(x, mean=0, sd=sqrt(2), log=T))   # H_2
+    P_x_Hmle = sum(dnorm(x, mean=0, sd=sqrt(mle_var), log=T))   # H_mle
+    data.table  (   P_x_H1
+                ,   P_x_H2
+                ,   P_x_Hmle
+                )
+}
+pp(a.few.likelihoods(x))
+```
 
 &nbsp;
 

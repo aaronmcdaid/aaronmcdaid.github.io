@@ -3,7 +3,7 @@ title: "*A five-decision testing procedure*"
 ---
 
 <style type="text/css">
-body{ font-size: 16px; }
+body{ font-size: 20px; }
 </style>
 
 &nbsp;
@@ -93,10 +93,10 @@ of incorrectly rejecting a hypothesis is no more than 5%.
 
 We propose dividing the possible sample means into five bins.
 As far as we are aware, this particular procedure has not been proposed before.
-Depending on which bin the sample means falls into, which accept or reject
-4according to this scheme, depending on where $\bar{x}$ is relative to the four
+We accept or reject
+according to this scheme, depending on where $\bar{x}$ is relative to the four
 'special' values, $-1.96, -1.64, 1.64, 1.96$.
-Look up your sample mean on the x-axis of this plot, and then look up
+Look up your sample mean on the x-axis of the plot below, and then look up
 the reject/accept rule written in that window.
 There are five windows in this plot, hence the "five-decision rule".
 
@@ -143,7 +143,7 @@ text (2.5, 0.2
 To prove that the error rate is at most 5%, we consider each of the three
 possible "truths" in turn:
 
-**Possibility 1/3: **
+**Possibility 1/3:**
 If $\theta<0$, then only the last two bins, when $\bar{x}>1.64$,
 constitute an error. For any $\theta<0$,
 the probability
@@ -151,18 +151,67 @@ of observing $\bar{x}>1.64$ is at most 5%.
 Of course, for $\theta$ which is truly much smaller than zero, the
 probability of error will be much smaller than 5%.
 
-**Possibility 2/3: **
+**Possibility 2/3:**
 If $\theta=0$, then only the outer two bins, when $|\bar{x}|>1.96$,
 constitute an error. And the probability, assuming $\theta=0$,
 of observing $|\bar{x}|>1.96$ is 5%.
 
-**Possibility 3/3: **
+**Possibility 3/3:**
 If $\theta>0$, then only the first two bins, when $\bar{x}<-1.64$,
 constitute an error. For any $\theta>0$,
 the probability
 of observing $\bar{x}<-1.64$ is at most 5%.
 Of course, for $\theta$ which is truly much greater than zero, the
 probability of error will be much smaller than 5%.
+
+# Improved power
+
+We propose this method because it is more powerful than existing methods.
+A simple [two-sided test](https://en.wikipedia.org/wiki/One-_and_two-tailed_tests)
+will simply consider two possibilities,
+either $\theta=0$ or $\theta \not= 0$, rejecting the former
+if $|\bar{x}|>1.96$.
+A slightly more powerful procedure than this two-sided test is
+to infer the direction of the test statistic also.
+When $|\bar{x}|>1.96$ and we have rejected $\theta \not= 0$,
+we are entitled to look at the sign of $\bar{x}$
+also to reject $\theta \le 0$ or $\theta \ge 0$.
+
+Our procedure is more powerful than these approaches,
+as we also make rejections when $1.65<|\bar{x}|<1.96$.
+We are able to make these rejections without requiring any extra assumptions
+- in advance - about the direction.
+
+Remember however, that these 'extra' rejections are relatively weak rejections.
+Depending on the application, rejecting $\theta<0$ and accepting that the null
+hypothesis might not be very helpful.
+But it might be useful when testing the side effects of a drug.
+We are satisfied in showing the effects are not negative - it is not
+always necessary to show a positive effect of the drug on
+every aspect of the patients life.
+
+We do not claim this replaces the conventional one-sided test in all cases.
+That test is very useful when we have a clear idea, in advance, of which
+direction is more "interesting" to reject.
+
+# Impossible null
+
+It's beyond the scope of this short post, but there are contexts
+where the null hypothesis is believed to be impossible before any
+experiment is performed.
+Some would argue that every drug has a non-zero effect, even though it
+might be very close to zero.
+If you believe this, in the context of your experiment, then our test
+simplifies to be equivalent to the
+three-decision testing procedure of
+[Jones and Tukey (2000)](http://dx.doi.org/10.1037/1082-989X.5.4.411).
+
+# Extending this
+
+The above can be extended in obvious ways to other distributions
+and other error rates, as long as you can calculate the relevant
+threholds at your desired error rates.
+
 
 &nbsp;
 

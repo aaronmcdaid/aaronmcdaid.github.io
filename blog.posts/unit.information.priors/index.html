@@ -135,7 +135,7 @@ $(document).ready(function () {
 </div>
 <div id="section-1" class="section level1">
 <h1> </h1>
-<p>This is the first in a series of posts I hope to wrote on model selection and the use of <em>unit information priors</em>. I don’t claim any great novelty in this post, I’m just writing up some simple experiments I’m doing to help me develop more intuition. Hope you find it interesting, and don’t hesitate to contact if you have any comments! I want feedback, please :-)</p>
+<p>This is the first in a series of posts I hope to wrote on model selection and the use of <a href="https://stats.stackexchange.com/questions/26329/what-is-a-unit-information-prior"><em>unit information priors</em></a>. I don’t claim any great novelty in this post, I’m just writing up some simple experiments I’m doing to help me develop more intuition. Hope you find it interesting, and don’t hesitate to contact if you have any comments! I want feedback, please :-)</p>
 <p>The basic issue that I’m going to tackle is that you have two models and an observed dataset which you know was generated from one of those two models, and you want to estimate (“select”) which of the models was used to generate the dataset.</p>
 <p>This post will use some very simple examples, for which there are often other simple methods to estimate (“select”) which model was used, but I focus on using unit information priors as they can often be easily extended to more complex models. I’m currently using these priors in <a href="https://aaronmcdaid.github.io/demos/mvnMCMC/mvnMCMC.html">my MCMC algorithm</a> which does clustering in multi-dimensional data; I hope someday to discuss that algorithm on this blog.</p>
 <div id="the-neyman-pearson-lemma" class="section level2">
@@ -143,27 +143,29 @@ $(document).ready(function () {
 <p>We have a sample of <span class="math inline">\(n\)</span> numbers drawn from distribution <span class="math inline">\(X\)</span>, where <span class="math inline">\(X\)</span> is either <span class="math inline">\(H_1\)</span> or <span class="math inline">\(H_2\)</span>. I.e. Normally distributed with mean zero and variance equal to <span class="math inline">\(1\)</span> or <span class="math inline">\(2\)</span>:</p>
 <p><span class="math display">\[ H_1 : x_i \sim \mathcal{N}(0,1) \]</span> <span class="math display">\[ H_2 : x_i \sim \mathcal{N}(0,2) \]</span></p>
 <p>Given a vector of observations, <span class="math inline">\(\mathbf{x}\)</span>, we can compute its probability density (<em>likelihood</em>) under the two hypotheses in a straightforward manner. <span class="math display">\[
+\mathrm{P}_1 =
 \mathrm{P}(\mathbf{x} | H_1) = \prod_{i=1}^n \mathcal{N}( x_i ; 0,1 )
 \]</span> <span class="math display">\[
+\mathrm{P}_2 =
 \mathrm{P}(\mathbf{x} | H_2) = \prod_{i=1}^n \mathcal{N}( x_i ; 0,2 )
 \]</span></p>
 <p>where we define the following to compute the density of one observation, <span class="math inline">\(x\)</span>, under a given mean and variance: <span class="math display">\[
 \mathcal{N}( x ; \mu,\sigma^2 ) = \frac1{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
 \]</span></p>
-<p>A very simple approach is to simply say that if <span class="math inline">\(\mathrm{P}(\mathbf{x} | H_1)&gt;\mathrm{P}(\mathbf{x} | H_2)\)</span> then we select model <span class="math inline">\(1\)</span> as the true model, i.e. <span class="math inline">\(\sigma^2 = 1\)</span>. Otherwise, if <span class="math inline">\(\mathrm{P}(\mathbf{x} | H_1)&lt;\mathrm{P}(\mathbf{x} | H_2)\)</span> then we select model <span class="math inline">\(2\)</span> as the true model, i.e. <span class="math inline">\(\sigma^2 = 2\)</span>.</p>
+<p>A very simple approach is to simply say that if <span class="math inline">\(\mathrm{P}_1{&gt;}\mathrm{P}_2\)</span> then we select model <span class="math inline">\(1\)</span> as the true model, i.e. <span class="math inline">\(\sigma^2 = 1\)</span>. Otherwise, if <span class="math inline">\(\mathrm{P}_1{&lt;}\mathrm{P}_2\)</span> then we select model <span class="math inline">\(2\)</span> as the true model, i.e. <span class="math inline">\(\sigma^2 = 2\)</span>.</p>
 <p>More generally, we can compute the ratio of these two probability densities and also define a threshold. When the ratio is greater than the threshold, we select <span class="math inline">\(H_1\)</span>, otherwise we select <span class="math inline">\(H_2\)</span>. <span class="math display">\[
-\frac{\mathrm{P}(\mathbf{x} | H_1)}{\mathrm{P}(\mathbf{x} | H_2)}
+\frac{\mathrm{P}_1}{\mathrm{P}_2}
 \]</span> A higher or lower threshold can be set if you wish to control the error rates in a frequentist manner. Perhaps you want to assume <span class="math inline">\(H_1\)</span> in general and only select <span class="math inline">\(H_2\)</span> (reject <span class="math inline">\(H_1\)</span>) when the evidence is very strong. This would require a very low threshold, much less than <span class="math inline">\(1.0\)</span>.</p>
-<p>This is essentially the <a href="https://en.wikipedia.org/wiki/Neyman%E2%80%93Pearson_lemma">Neyman-Pearson lemma</a>; when given two <em>point</em> hypotheses, you simply compute the probability of the data under both models and compare the two probabilities. The likelihoods are <em>sufficient statistics</em> and you can (and should) throw away the data and use only the two <em>likelihoods</em> to select a model.</p>
+<p>This is essentially the <a href="https://en.wikipedia.org/wiki/Neyman%E2%80%93Pearson_lemma">Neyman-Pearson lemma</a>; when given two <em>point</em> hypotheses, you simply compute the probability of the data under both models and compare the two probabilities. The likelihoods are <em>sufficient statistics</em> and you can (and should) throw away the data and use only the two <em>likelihoods</em> to select a model, along with a threshold that you must select.</p>
 <p>For simplicity, I will use a threshold of <span class="math inline">\(1.0\)</span> in the remainder of this document. In other words, we simply select the model which has the larger likelihood.</p>
 <p><span class="math inline">\(H_1\)</span> and <span class="math inline">\(H_2\)</span> are called <em>point</em> hypotheses because the all the model parameters (mean and variance) are known and therefore the density can be calculated exactly from the observed data <span class="math inline">\(\mathbf{x}\)</span></p>
 </div>
 <div id="non-point-hypotheses" class="section level2">
 <h2>(non-)Point hypotheses</h2>
 <p>Before proceeding, Let’s define <span class="math inline">\(\tau{=}\frac1{\sigma^2}\)</span>, the inverse of the <em>variance</em>. This is known as the <em>precision</em> and is often easier to work with mathematically. We can now refer to a Normal distribution as <span class="math inline">\(\mathcal{N}(\mu,\tau^{-1})\)</span>, which is equivalent to <span class="math inline">\(\mathcal{N}(\mu,\sigma^2)\)</span>.</p>
-<p>So - returning to our models - what do we do if <span class="math inline">\(H_2\)</span> is replaced with <span class="math inline">\(H_\tau\)</span>, with unknown variance (unknown <span class="math inline">\(\sigma^2\)</span>)? How do we now select between <span class="math inline">\(H_1\)</span> and <span class="math inline">\(H_{\tau^{-1}}\)</span>?</p>
-<p><span class="math display">\[ H_\tau : x_i \sim \mathcal{N}(0,\tau^{-1}) \]</span></p>
-<p>In this case, if we don’t know exactly what <span class="math inline">\(\tau\)</span> is, we cannot exactly compute <span class="math inline">\(\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})\)</span>. Given a dataset which we know was drawn from <span class="math inline">\(H_1\)</span> or <span class="math inline">\(H_{\tau^{-1}}\)</span>, how do we select which of those was the true model?</p>
+<p>So - returning to our models - what do we do if <span class="math inline">\(H_2\)</span> is replaced with <span class="math inline">\(H_{\tau^{-1}}\)</span>, with unknown variance (unknown <span class="math inline">\(\sigma^2\)</span>)?</p>
+<p><span class="math display">\[ H_{\tau^{-1}} : x_i \sim \mathcal{N}(0,\tau^{-1}) \]</span></p>
+<p>How do we now select between <span class="math inline">\(H_1\)</span> and <span class="math inline">\(H_{\tau^{-1}}\)</span>? In this case, if we don’t know exactly what <span class="math inline">\(\tau\)</span> is, we cannot exactly compute <span class="math inline">\(\mathrm{P}_{\tau^{-1}} = \mathrm{P}(\mathbf{x} | H_{\tau^{-1}})\)</span>. Given a dataset which we know was drawn from <span class="math inline">\(H_1\)</span> or <span class="math inline">\(H_{\tau^{-1}}\)</span>, how do we select which of those was the true model?</p>
 </div>
 <div id="naive-approach-via-an-estimate-hattau" class="section level2">
 <h2>Naive approach, via an estimate <span class="math inline">\(\hat\tau\)</span></h2>

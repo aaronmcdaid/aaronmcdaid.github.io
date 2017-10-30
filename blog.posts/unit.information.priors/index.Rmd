@@ -23,7 +23,8 @@ Statistics and C++, and other fun projects
 
 # &nbsp;
 
-This is the first in a series of posts I hope to wrote on model selection and the use of *unit information priors*.
+This is the first in a series of posts I hope to wrote on model selection and the use of
+[*unit information priors*](https://stats.stackexchange.com/questions/26329/what-is-a-unit-information-prior).
 I don't claim any great novelty in this post, I'm just writing up some simple experiments I'm doing to help me develop more intuition.
 Hope you find it interesting, and don't hesitate to contact if you have any comments! I want feedback, please :-)
 
@@ -47,9 +48,11 @@ $$ H_2 : x_i \sim \mathcal{N}(0,2) $$
 Given a vector of observations, $\mathbf{x}$, we can compute its probability density (*likelihood*) under the two hypotheses
 in a straightforward manner.
 $$
+\mathrm{P}_1 =
 \mathrm{P}(\mathbf{x} | H_1) = \prod_{i=1}^n \mathcal{N}( x_i ; 0,1 )
 $$
 $$
+\mathrm{P}_2 =
 \mathrm{P}(\mathbf{x} | H_2) = \prod_{i=1}^n \mathcal{N}( x_i ; 0,2 )
 $$
 
@@ -58,15 +61,15 @@ $$
 \mathcal{N}( x ; \mu,\sigma^2 ) = \frac1{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
 $$
 
-A very simple approach is to simply say that if $\mathrm{P}(\mathbf{x} | H_1)>\mathrm{P}(\mathbf{x} | H_2)$
+A very simple approach is to simply say that if $\mathrm{P}_1{>}\mathrm{P}_2$
 then we select model $1$ as the true model, i.e. $\sigma^2 = 1$.
-Otherwise, if $\mathrm{P}(\mathbf{x} | H_1)<\mathrm{P}(\mathbf{x} | H_2)$
+Otherwise, if $\mathrm{P}_1{<}\mathrm{P}_2$
 then we select model $2$ as the true model, i.e. $\sigma^2 = 2$.
 
 More generally, we can compute the ratio of these two probability densities and also define a threshold.
 When the ratio is greater than the threshold, we select $H_1$, otherwise we select $H_2$.
 $$
-\frac{\mathrm{P}(\mathbf{x} | H_1)}{\mathrm{P}(\mathbf{x} | H_2)}
+\frac{\mathrm{P}_1}{\mathrm{P}_2}
 $$
 A higher or lower threshold can be set if you wish to control the error rates in a frequentist manner.
 Perhaps you want to assume $H_1$ in general and only select $H_2$ (reject $H_1$) when the evidence
@@ -74,8 +77,10 @@ is very strong. This would require a very low threshold, much less than $1.0$.
 
 This is essentially the [Neyman-Pearson lemma](https://en.wikipedia.org/wiki/Neyman%E2%80%93Pearson_lemma);
 when given two *point* hypotheses, you simply compute the probability of the data under both models
-and compare the two probabilities. The likelihoods are *sufficient statistics* and you can (and should) throw away the data
-and use only the two *likelihoods* to select a model.
+and compare the two probabilities.
+The likelihoods are *sufficient statistics* and you can (and should) throw away the data
+and use only the two *likelihoods* to select a model,
+along with a threshold that you must select.
 
 For simplicity, I will use a threshold of $1.0$ in the remainder of this document.
 In other words, we simply select the model which has the larger likelihood.
@@ -92,13 +97,13 @@ We can now refer to a Normal distribution as $\mathcal{N}(\mu,\tau^{-1})$,
 which is equivalent to $\mathcal{N}(\mu,\sigma^2)$.
 
 So - returning to our models - what do we do if $H_2$ is replaced with
-$H_\tau$, with unknown variance (unknown $\sigma^2$)?
+$H_{\tau^{-1}}$, with unknown variance (unknown $\sigma^2$)?
+
+$$ H_{\tau^{-1}} : x_i \sim \mathcal{N}(0,\tau^{-1}) $$
+
 How do we now select between $H_1$ and $H_{\tau^{-1}}$?
-
-$$ H_\tau : x_i \sim \mathcal{N}(0,\tau^{-1}) $$
-
 In this case, if we don't know exactly what $\tau$ is, we cannot exactly compute
-$\mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$.
+$\mathrm{P}_{\tau^{-1}} = \mathrm{P}(\mathbf{x} | H_{\tau^{-1}})$.
 Given a dataset which we know was drawn from $H_1$ or $H_{\tau^{-1}}$, how do we select which of those was the true model?
 
 ## Naive approach, via an estimate $\hat\tau$

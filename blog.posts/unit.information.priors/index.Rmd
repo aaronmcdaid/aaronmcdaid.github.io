@@ -216,7 +216,19 @@ Note that prior does depend on the observed data. However, it is a relatively di
 
 # Simulations
 
-To evaluate this method on these two simple models, we will do some simulations
+To evaluate this method on these two simple models, we will do some simulations.
+I draw 1000 different $\tau$ from a $\mathrm{Gamma}(1,1)$, and then draw a
+sample ($n=200$) for each $\tau$. I compute four log-likelihoods for each:
+
+1. $\mathrm{P}(\mathbf{x} | H_2)$ - assuming Hypothesis 1 is true, i.e. $\tau = 0.5 \sigma^{-2}$
+1. $\mathrm{P}(\mathbf{x} | H_1)$ - assuming Hypothesis 1 is true, i.e. $\tau = 1 = \sigma^2$
+1. $\mathrm{P}(\mathbf{x} | H_{mle})$ - assuming the true variance equals the MLE estimate in the sample.
+1. $\mathrm{P}(\mathbf{x} | H_{uip})$ - log-likelihood, after interesting over our unit information prior.
+1. $\mathrm{P}(\mathbf{x} | H_{exact})$ - log-likelihood, after interesting over the "true" prior, $\mathrm{Gamma}(1,1)$
+
+In all the plots below, the true $\tau$ is on the x-axis.
+The interesting thing in each plot is to see when the does cross the horizontal
+line at $y=0$, as that is where the ratio of the (integrated) likelihoods is $1.0$.
 
 ```{r}
 set.seed(1337)

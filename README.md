@@ -1,3 +1,18 @@
-# aaronmcdaid.github.io
+<div style="border:1px solid black ; text-align:center">
 
-To be my blog and 'demo site'. I hope I can get some Markdown to work nicely, and then some (LaTeX) formulae in the Markdown. Might need Jekyl or something apparently
+# [Aaron McDaid](https://aaronmcdaid.github.io/)
+
+Statistics and C++, and other fun projects
+
+`aaron.mcdaid@gmail.com`
+
+[`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+</div>
+
+Recent posts:
+1.  [*Countdown solver, written in Haskell*](blog.posts/countdown.in.haskell/) - 29th Oct 2017
+2.  [*Unit information priors and model selection*](blog.posts/unit.information.priors/) - 30th Oct 2017
+
+I'll write about statistics and programming languages, usually C++.
+Really, I'll just try to document the fun stuff I'm working on, as well as more 'sensible'
+stuff related to my career.

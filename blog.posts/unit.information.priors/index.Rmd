@@ -220,8 +220,8 @@ To evaluate this method on these two simple models, we will do some simulations.
 I draw 1000 different $\tau$ from a $\mathrm{Gamma}(1,1)$, and then draw a
 sample ($n=200$) for each $\tau$. I compute four log-likelihoods for each:
 
-1. $\mathrm{P}(\mathbf{x} | H_2)$ - assuming Hypothesis 1 is true, i.e. $\tau = 0.5 \sigma^{-2}$
-1. $\mathrm{P}(\mathbf{x} | H_1)$ - assuming Hypothesis 1 is true, i.e. $\tau = 1 = \sigma^2$
+1. $\mathrm{P}(\mathbf{x} | H_1)$ - assuming Hypothesis 1 is true, i.e. $\tau = 1   = \sigma^2$
+1. $\mathrm{P}(\mathbf{x} | H_2)$ - assuming Hypothesis 1 is true, i.e. $\tau = 0.5;  \sigma^2 = 2$
 1. $\mathrm{P}(\mathbf{x} | H_{mle})$ - assuming the true variance equals the MLE estimate in the sample.
 1. $\mathrm{P}(\mathbf{x} | H_{uip})$ - log-likelihood, after interesting over our unit information prior.
 1. $\mathrm{P}(\mathbf{x} | H_{exact})$ - log-likelihood, after interesting over the "true" prior, $\mathrm{Gamma}(1,1)$
@@ -249,15 +249,31 @@ a.few.loglikelihoods <- function(x) {
     # to compute the integrated likelihood, integrate over all tau,
     # we can just take an arbitrary one, as discussed above
     tau_arbitrary = 1
-    P_x_uip =   (   sum(dnorm(x, mean=0, sd=sqrt(1/tau_arbitrary), log=T))
+    P_x_Huip =   (   sum(dnorm(x, mean=0, sd=sqrt(1/tau_arbitrary), log=T))
                 +   dgamma(tau_arbitrary, shape=alpha_prior    , rate=beta_prior    , log=T)
                 -   dgamma(tau_arbitrary, shape=alpha_posterior, rate=beta_posterior, log=T)
                 )
 
+    # repeat the above with the 'true' prior parameters
+    alpha_prior = 1
+    beta_prior = 1
+    alpha_posterior = alpha_prior + n/2
+    beta_posterior = beta_prior + 1/2 * sum(x^2)
+
+    # to compute the integrated likelihood, integrate over all tau,
+    # we can just take an arbitrary one, as discussed above
+    tau_arbitrary = 1
+    P_x_Hexact =   (   sum(dnorm(x, mean=0, sd=sqrt(1/tau_arbitrary), log=T))
+                +   dgamma(tau_arbitrary, shape=alpha_prior    , rate=beta_prior    , log=T)
+                -   dgamma(tau_arbitrary, shape=alpha_posterior, rate=beta_posterior, log=T)
+                )
+
+
     data.table  (   P_x_H1
                 ,   P_x_H2
                 ,   P_x_Hmle
-                ,   P_x_uip
+                ,   P_x_Huip
+                ,   P_x_Hexact
                 )
 }
 
@@ -268,18 +284,66 @@ lapply(many.taus, function(tau) {
 }) %>%rbindlist -> d
 d = d[order(tau)]
 pp(d)
-d[,{
+d[tau >= 0.1 & tau <= 10.0,{
     plot(   c(1,NA,tau)
         ,   c(NA,0,P_x_Hmle - P_x_H1)
         ,   log='x'
         ,   xlab = expression(tau)
         ,   ylab = expression('log-ratio of ' * H[mle] * ' and ' * H[1])
-        ,   sub = expression('The log-ratio is always positive comparing ' * H[mle] * 'to H_1, confirming H_mle is not useful')
+        #,   ylim = c(0,100)
+        ,   sub = expression('The log-ratio is always positive comparing ' * H[mle] * 'to ' * 'H_1' * ', confirming H_mle is not useful')
+        )
+    abline(h=0, col='grey')
+}] %>% invisible
+d[tau >= 0.25 & tau < 2.0,{
+    plot(   c(1,NA,tau)
+        ,   c(NA,0,P_x_H2 - P_x_H1)
+        ,   log='x'
+        ,   xlab = expression(tau)
+        ,   ylab = expression('log-ratio of ' * H[2] * ' and ' * H[1])
+        #,   ylim = c(0,100)
+        #,   xlim= c(0.5, 4)
+        ,   sub = expression('The two vertical grey lines at 0.5 and 1.0 represent when '*H[2]*' and '*H[1]*', respectively, are true. No surprise the log-ratio crosses 0 in between those points')
+        )
+    abline(h=0, col='grey')
+    abline(v=1, col='grey')
+    abline(v=0.5, col='grey')
+}] %>% invisible
+d[
+  tau >= 0.5 & tau < 2.0
+  ,{
+    plot(   c(1,NA,tau)
+        ,   c(NA,0,P_x_Hexact - P_x_H1)
+        ,   log='x'
+        ,   xlab = expression(tau)
+        ,   ylab = expression('log-ratio of ' * H[exact] * ' and ' * H[1])
+        #,   ylim = c(0,100)
+        #,   xlim= c(0.5, 4)
+        ,   sub = expression('Using the "exact" prior, which is cheating. As expected, '*H[1]*' is selected (y-axis < 0) when '*tau*' is close to '
+                             *1.0*' and the rejected (y-axis > 0) when '*tau*' is far from '*1.0)
+        )
+    abline(h=0, col='grey')
+    abline(v=1, col='grey')
+}] %>% invisible
+d[
+  tau >= 0.5 & tau < 2.0
+  ,{
+    plot(   c(1,NA,tau)
+        ,   c(NA,0,P_x_Huip - P_x_H1)
+        ,   log='x'
+        ,   xlab = expression(tau)
+        ,   ylab = expression('log-ratio of ' * H[uip] * ' and ' * H[1])
+        #,   ylim = c(0,100)
+        #,   xlim= c(0.5, 4)
+        ,   sub = expression('Using our UIP prior. As expected, '*H[1]*' is selected (y-axis < 0) when '*tau*' is close to '
+                             *1.0*' and the rejected (y-axis > 0) when '*tau*' is far from '*1.0)
         )
     abline(h=0, col='grey')
     abline(v=1, col='grey')
 }] %>% invisible
 ```
+
+In conclusion, ...
 
 &nbsp;
 

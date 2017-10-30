@@ -220,9 +220,7 @@ To evaluate this method on these two simple models, we will do some simulations
 
 ```{r}
 set.seed(1337)
-n=1000
-x = rnorm(n, mean=0, sd=sqrt(1))
-plot(density(x))
+n=200
 a.few.loglikelihoods <- function(x) {
     stopifnot(n==length(x))
     mle_var = mean(x*x)
@@ -250,7 +248,25 @@ a.few.loglikelihoods <- function(x) {
                 ,   P_x_uip
                 )
 }
-pp(a.few.loglikelihoods(x))
+
+many.taus = rgamma(1000, 1,1)
+lapply(many.taus, function(tau) {
+    x = rnorm(n, mean=0, sd=sqrt(1/tau))
+    data.table(tau=tau, a.few.loglikelihoods(x))
+}) %>%rbindlist -> d
+d = d[order(tau)]
+pp(d)
+d[,{
+    plot(   c(1,NA,tau)
+        ,   c(NA,0,P_x_Hmle - P_x_H1)
+        ,   log='x'
+        ,   xlab = expression(tau)
+        ,   ylab = expression('log-ratio of ' * H[mle] * ' and ' * H[1])
+        ,   sub = expression('The log-ratio is always positive comparing ' * H[mle] * 'to H_1, confirming H_mle is not useful')
+        )
+    abline(h=0, col='grey')
+    abline(v=1, col='grey')
+}] %>% invisible
 ```
 
 &nbsp;

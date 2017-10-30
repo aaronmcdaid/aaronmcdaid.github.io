@@ -167,6 +167,7 @@ is a very biased estimate of that and therefore can't be used as is.
 Before proceeding, I should note that the [BIC](https://en.wikipedia.org/wiki/Bayesian_information_criterion)
 or [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) can be used to adjust
 these estimates and reduce the bias. Go ahead and read up on those, they are interesting!
+The BIC is particularly relevant, as it also uses a unit information prior.
 But this post is about another approach.
 
 
@@ -375,11 +376,17 @@ is close to 1.0 and the rejected (y-axis > 0) when $\tau$ is far from 1.0.
 d[
   tau >= 0.5 & tau < 2.0
   ,{
-    plot(   tau,   P_x_Hexact - P_x_H1
+    y = P_x_Hexact - P_x_H1
+    plot(   tau,   y
         ,   xlab = expression(tau)
         ,   ylab = expression('log-ratio of ' * P[exact] * ' and ' * P[1])
         ,   log='x', main='Figure 3'
         )
+    lines(tau, predict( loess(   y ~ tau ))
+          , col='#0000d080'
+          , lwd=4
+          )
+    legend(x='topright',legend='fitted curve from loess()', lwd=4, col='#0000d080')
     abline(h=0, col='grey')
     abline(v=1, col='grey')
 }] %>% invisible
@@ -395,18 +402,28 @@ As expected, $H_1$ is selected (y-axis < 0) when $\tau$ is close to
 d[
   tau >= 0.5 & tau < 2.0
   ,{
-    plot(   tau ,   P_x_Huip - P_x_H1
+    y = P_x_Huip - P_x_H1
+    plot(   tau ,   y
         ,   xlab = expression(tau)
         ,   ylab = expression('log-ratio of ' * P[uip] * ' and ' * P[1])
         ,   log='x', main = 'Figure 4'
         )
+    lines(tau, predict( loess(   y ~ tau ))
+          , col='#0000d080'
+          , lwd=4
+          )
+    legend(x='topright',legend='fitted curve from loess()', lwd=4, col='#0000d080')
     abline(h=0, col='grey')
     abline(v=1, col='grey')
 }] %>% invisible
 ```
+# Why use this approach?
+
+Figure 3 and Figure 4 are similar to each other, confirming that $\mathrm{P}_{uip}$
+makes very similar selections to $\mathrm{P}_{exact}$.
 
 The models used in this blog post are quite simple; we're really just testing if the precision (or variance) is
-different from 1.0. Other, more conventional, methods exist for this.
+different from 1.0. Other, more conventional, methods exist for this kind of test.
 However, if you have more than two models, and those models are very complex, it can be difficult
 to discover a suitable [test statistic](https://en.wikipedia.org/wiki/Test_statistic) and to correctly
 identify a suitable threshold to apply to the observed test statistic.
@@ -417,7 +434,7 @@ apply the Neyman-Pearon lemma in this approximate manner.
 I say "approximate" because we're not using the "true" prior (assuming one exists);
 where the true prior is known (the "exact" case above), we essentially have a point hypothesis.
 
-Very complex models can be used in this framework, as long as you have distributions with
+Very complex models can be used in this framework, as long as you have distributions that have a
 [conjugate prior](https://en.wikipedia.org/wiki/Conjugate_prior#Continuous_distributions). We used Gamma above, as it is conjugate to the Normal distribution where
 the mean is known.
 

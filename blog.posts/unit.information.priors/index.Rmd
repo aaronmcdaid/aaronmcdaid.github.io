@@ -223,7 +223,7 @@ set.seed(1337)
 n=1000
 x = rnorm(n, mean=0, sd=sqrt(1))
 plot(density(x))
-a.few.likelihoods <- function(x) {
+a.few.loglikelihoods <- function(x) {
     stopifnot(n==length(x))
     mle_var = mean(x*x)
     P_x_H1 = sum(dnorm(x, mean=0, sd=1, log=T))   # H_1
@@ -250,7 +250,7 @@ a.few.likelihoods <- function(x) {
                 ,   P_x_uip
                 )
 }
-pp(a.few.likelihoods(x))
+pp(a.few.loglikelihoods(x))
 ```
 
 &nbsp;

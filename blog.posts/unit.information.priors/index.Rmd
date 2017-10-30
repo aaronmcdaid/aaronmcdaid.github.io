@@ -69,7 +69,7 @@ A higher or lower threshold can be set if you wish to control the error rates in
 Perhaps you want to assume $H_1$ in general and only select $H_2$ (reject $H_1$) when the evidence
 is very strong. This would require a very low threshold, much less than $1.0$.
 
-This is essentially the [Nayman-Pearson lemma](https://en.wikipedia.org/wiki/Neyman%E2%80%93Pearson_lemma);
+This is essentially the [Neyman-Pearson lemma](https://en.wikipedia.org/wiki/Neyman%E2%80%93Pearson_lemma);
 when given two *point* hypotheses, you simply compute the probability of the data under both models
 and compare the two probabilities. The likelihoods are *sufficient statistics* and you can (and should) throw away the data
 and use only the two *likelihoods* to select a model.
@@ -229,6 +229,13 @@ sample ($n=200$) for each $\tau$. I compute four log-likelihoods for each:
 In all the plots below, the true $\tau$ is on the x-axis.
 The interesting thing in each plot is to see when the does cross the horizontal
 line at $y=0$, as that is where the ratio of the (integrated) likelihoods is $1.0$.
+This line decides which model has been selected.
+
+First, we define the function `a.few.loglikelihoods` which takes a sample as input
+and computes those five log-likelihoods and returns them.
+
+I make heavy use of the `data.table` package in `R`, by the way.
+That's an excellent package, with an [excellent concise video tutorial](https://www.datacamp.com/community/tutorials/data-table-r-tutorial).
 
 ```{r}
 set.seed(1337)
@@ -242,7 +249,6 @@ a.few.loglikelihoods <- function(x) {
     # compute the UIP parameters for the Gamma prior
     alpha_prior = 1/2 # alpha is 'shape' in {r,g,p}gamma
     beta_prior = mle_var / 2 # 1/(2*n) * sum(x^2) # beta is 'rate' in {r,g,p}gamma
-    #stopifnot(mle_var / 2 == 1/(2*n) * sum(x^2) ) # kinda obvious, just making sure I rearranged them correctly
     alpha_posterior = alpha_prior + n/2
     beta_posterior = beta_prior + 1/2 * sum(x^2)
 
@@ -284,66 +290,92 @@ lapply(many.taus, function(tau) {
 }) %>%rbindlist -> d
 d = d[order(tau)]
 pp(d)
+```
+
+# Plots and analysis
+
+Now that the data has been prepared above, we close a few plots to show which model is selected.
+The final figure confirms that the integrated log-loglikelihood based on the unit information
+prior, $H_{uip}$, doesn't have the extreme bias of using the MLE, $H_{mle}$.
+We know that $H_{exact}$ is the best possible in this case, as it uses the true distribution
+of $\tau$ and therefore the Neyman-Pearson Lemma applies directly.
+In the last two plots, we can see that $H_{exact}$ and $H_{uip}$ get very similar results,
+confirming that $H_{uip}$ maintains good accuracy despite not knowing the true prior for $\tau$,
+which was $\mathrm{Gamma}(1,1)$.
+
+### Figure 1
+
+In Figure 1, we see that
+the log-ratio is always positive comparing $H_{mle}$ to $H_1$, which confirms that $H_{mle}$ is not useful.
+
+```{r fig.align='center'}
 d[tau >= 0.1 & tau <= 10.0,{
-    plot(   c(1,NA,tau)
-        ,   c(NA,0,P_x_Hmle - P_x_H1)
-        ,   log='x'
-        ,   xlab = expression(tau)
-        ,   ylab = expression('log-ratio of ' * H[mle] * ' and ' * H[1])
-        #,   ylim = c(0,100)
-        ,   sub = expression('The log-ratio is always positive comparing ' * H[mle] * 'to ' * 'H_1' * ', confirming H_mle is not useful')
+    plot(   tau ,   P_x_Hmle - P_x_H1
+        ,   xlab = expression(tau) ,   ylab = expression('log-ratio of ' * H[mle] * ' and ' * H[1])
+        ,   log='x',   main = 'Figure 1'
         )
     abline(h=0, col='grey')
 }] %>% invisible
+```
+
+### Figure 2
+
+The two vertical grey lines at 0.5 and 1.0 represent when $H_2$ and $H_1$, respectively, are true. No surprise the log-ratio crosses 0 in between those points.
+
+```{r fig.align='center'}
 d[tau >= 0.25 & tau < 2.0,{
-    plot(   c(1,NA,tau)
-        ,   c(NA,0,P_x_H2 - P_x_H1)
-        ,   log='x'
-        ,   xlab = expression(tau)
-        ,   ylab = expression('log-ratio of ' * H[2] * ' and ' * H[1])
-        #,   ylim = c(0,100)
-        #,   xlim= c(0.5, 4)
-        ,   sub = expression('The two vertical grey lines at 0.5 and 1.0 represent when '*H[2]*' and '*H[1]*', respectively, are true. No surprise the log-ratio crosses 0 in between those points')
+    plot(   tau,   P_x_H2-P_x_H1
+        ,   xlab = expression(tau) ,   ylab = expression('log-ratio of ' * H[2] * ' and ' * H[1])
+        ,   log='x',   main='Figure 2'
         )
     abline(h=0, col='grey')
     abline(v=1, col='grey')
     abline(v=0.5, col='grey')
 }] %>% invisible
+```
+
+### Figure 3
+
+Using the "exact" prior, which is cheating.
+As expected, $H_1$, is selected (y-axis < 0) when $\tau$
+is close to 1.0 and the rejected (y-axis > 0) when $\tau$ is far from 1.0.
+
+```{r fig.align='center'}
 d[
   tau >= 0.5 & tau < 2.0
   ,{
     plot(   c(1,NA,tau)
         ,   c(NA,0,P_x_Hexact - P_x_H1)
-        ,   log='x'
         ,   xlab = expression(tau)
         ,   ylab = expression('log-ratio of ' * H[exact] * ' and ' * H[1])
-        #,   ylim = c(0,100)
-        #,   xlim= c(0.5, 4)
-        ,   sub = expression('Using the "exact" prior, which is cheating. As expected, '*H[1]*' is selected (y-axis < 0) when '*tau*' is close to '
-                             *1.0*' and the rejected (y-axis > 0) when '*tau*' is far from '*1.0)
-        )
-    abline(h=0, col='grey')
-    abline(v=1, col='grey')
-}] %>% invisible
-d[
-  tau >= 0.5 & tau < 2.0
-  ,{
-    plot(   c(1,NA,tau)
-        ,   c(NA,0,P_x_Huip - P_x_H1)
-        ,   log='x'
-        ,   xlab = expression(tau)
-        ,   ylab = expression('log-ratio of ' * H[uip] * ' and ' * H[1])
-        #,   ylim = c(0,100)
-        #,   xlim= c(0.5, 4)
-        ,   sub = expression('Using our UIP prior. As expected, '*H[1]*' is selected (y-axis < 0) when '*tau*' is close to '
-                             *1.0*' and the rejected (y-axis > 0) when '*tau*' is far from '*1.0)
+        ,   log='x', main='Figure 3'
         )
     abline(h=0, col='grey')
     abline(v=1, col='grey')
 }] %>% invisible
 ```
 
-In conclusion, ...
+### Figure 4
+
+Using our UIP prior.
+As expected, $H_1$ is selected (y-axis < 0) when $\tau$ is close to
+1.0 and the rejected (y-axis > 0) when $\tau$ is far from 1.0.
+
+```{r fig.align='center'}
+d[
+  tau >= 0.5 & tau < 2.0
+  ,{
+    plot(   tau ,   P_x_Huip - P_x_H1
+        ,   xlab = expression(tau)
+        ,   ylab = expression('log-ratio of ' * H[uip] * ' and ' * H[1])
+        ,   log='x', main = 'Figure 4'
+        )
+    abline(h=0, col='grey')
+    abline(v=1, col='grey')
+}] %>% invisible
+```
+
+Thanks for making it this far! I'd love feedback, see my Twitter handle and my email address at the top of the page.
 
 &nbsp;
 

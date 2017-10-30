@@ -19,6 +19,8 @@ Statistics and C++, and other fun projects
 
 <div style="text-align:right">
 ***by [Aaron](https://aaronmcdaid.github.io/), 30th October 2017***
+
+[(code for this document)](index.Rmd)
 </div>
 
 # &nbsp;

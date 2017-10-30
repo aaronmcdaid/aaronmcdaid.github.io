@@ -1,3 +1,11 @@
+---
+title: "*Aaron McDaid*"
+---
+
+<style type="text/css">
+body{ font-size: 24px; }
+</style>
+
 <div style="border:1px solid black ; text-align:center">
 
 # [Aaron McDaid](https://aaronmcdaid.github.io/)
@@ -10,6 +18,7 @@ Statistics and C++, and other fun projects
 </div>
 
 Recent posts:
+
 1.  [*Countdown solver, written in Haskell*](blog.posts/countdown.in.haskell/) - 29th Oct 2017
 2.  [*Unit information priors and model selection*](blog.posts/unit.information.priors/) - 30th Oct 2017
 

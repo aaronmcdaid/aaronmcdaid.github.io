@@ -2,6 +2,10 @@
 title: "*Unit information priors and model selection*"
 ---
 
+<style type="text/css">
+body{ font-size: 16px; }
+</style>
+
 &nbsp;
 
 <div style="border:1px solid black ; text-align:center">
@@ -417,10 +421,12 @@ d[
     abline(v=1, col='grey')
 }] %>% invisible
 ```
+
 # Why use this approach?
 
 Figure 3 and Figure 4 are similar to each other, confirming that $\mathrm{P}_{uip}$
-makes very similar selections to $\mathrm{P}_{exact}$.
+makes very similar selections to $\mathrm{P}_{exact}$, and therefore is almost
+as accurate as we could hope for in this model.
 
 The models used in this blog post are quite simple; we're really just testing if the precision (or variance) is
 different from 1.0. Other, more conventional, methods exist for this kind of test.

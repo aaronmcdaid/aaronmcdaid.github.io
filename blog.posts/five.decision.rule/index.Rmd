@@ -1,0 +1,185 @@
+---
+title: "*A five-decision testing procedure*"
+---
+
+<style type="text/css">
+body{ font-size: 16px; }
+</style>
+
+&nbsp;
+
+<div style="border:1px solid black ; text-align:center">
+
+# [Aaron McDaid](https://aaronmcdaid.github.io/)
+
+Statistics and C++, and other fun projects
+
+`aaron.mcdaid@gmail.com`
+
+[`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+</div>
+
+# &nbsp;
+
+<div style="text-align:right">
+***by [Aaron](https://aaronmcdaid.github.io/), 30th October 2017***
+
+[(code for this document)](index.Rmd)
+</div>
+
+# &nbsp;
+
+*This is a short post summarising some recent work
+[(**arXiv link**)](https://arxiv.org/abs/1710.06676)
+I did with [Zoltan Kutalik](https://twitter.com/zkutalik)
+and [Valentin Rousson](https://www.iumsp.ch/fr/rousson-valentin)*
+
+# The null hypothesis
+
+Given a sample of, say, $n=100$ observations from a Normal distribution with variance 100,
+we wish to make inferences about the mean, $\theta$,
+
+$$ x_i \sim \mathcal{N}(\theta,100) $$
+
+For simplicity, assume that we really just want to know which is these three are true:
+
+1. $\theta < 0$
+1. $\theta = 0$
+1. $\theta > 0$
+
+We compute the sample mean from our 100 observations,
+
+$$ \bar{x} = \frac1n \sum_{i=1}^n x_i $$
+
+If the sample mean is large, e.g. $\bar{x} > 10$, then it is virtually certain that $\theta > 0$ and we
+can safely *reject* the other two hypotheses.
+This is because, if $\theta{\le}0$, the probability of seeing $\bar{x} > 10$ is very small,
+less than $7 \times 10^{-24}$.
+
+```{r echo=F}
+# PP for Pretty Print. Print a variables name and value, separated by '='
+# You can pass in multiple values simultaneously
+PP <- function(x,...) {
+	cat(format(width=30, justify="right", deparse(substitute(x))))
+	cat('  =  ')
+	catn(deparse(x));
+	if(length(list(...))>0) {
+		PP(...)
+	}
+}
+```
+
+```{r}
+variance.of.one.observation = 100
+n=100
+variance.of.sample.mean = variance.of.one.observation / n
+prob.of.sample.mean.at.least.10 = pnorm(10, mean=0, sd=sqrt(variance.of.sample.mean), lower.tail=F)
+
+
+PP(n, variance.of.sample.mean, prob.of.sample.mean.at.least.10)
+```
+
+Similarly, if $\bar{x} < -10$, then it is virtually certain that $\theta > 0$ and we
+can safely *reject* the other two hypotheses.
+
+# Error rates
+
+If our sample mean is close to zero however, what to we do?
+We need to set thresholds, where we accept our reject the hypotheses
+depending on the value of the sample mean.
+It is common to decide these thresholds by first fixing an error rate,
+typically $\alpha = 0.05$, and then calculating the thresholds such that the probability
+of incorrectly rejecting a hypothesis is no more than 5%.
+
+We propose dividing the possible sample means into five bins.
+As far as we are aware, this particular procedure has not been proposed before.
+Depending on which bin the sample means falls into, which accept or reject
+4according to this scheme, depending on where $\bar{x}$ is relative to the four
+'special' values, $-1.96, -1.64, 1.64, 1.96$.
+Look up your sample mean on the x-axis of this plot, and then look up
+the reject/accept rule written in that window.
+There are five windows in this plot, hence the "five-decision rule".
+
+```{r}
+outer.threshold = qnorm(0.025, mean=0, sd=sqrt(variance.of.sample.mean), lower.tail=F)
+inner.threshold = qnorm(0.05 , mean=0, sd=sqrt(variance.of.sample.mean), lower.tail=F)
+PP(outer.threshold, inner.threshold)
+```
+
+```{r echo=F}
+plot(dnorm ,xlim=c(-3,3)
+     ,xaxt='n'
+     ,xlab='' ,ylab='', col='lightblue'
+     )
+axis(1, format(digits=4,c(-inner.threshold,-outer.threshold,inner.threshold,outer.threshold))
+     ,las=2
+     )
+abline(v= outer.threshold, col='grey')
+abline(v= inner.threshold, col='grey')
+abline(v=-outer.threshold, col='grey')
+abline(v=-inner.threshold, col='grey')
+text (-2.5, 0.2
+     , srt=-90
+     ,labels = expression('Reject   '* {theta>=0} * '    Accept  '* {theta< 0} )
+     )
+text (-1.8, 0.2
+     , srt=-90
+     ,labels = expression('Reject   '* {theta> 0} * '    Accept  '* {theta<=0} )
+     )
+text (0   , 0.2
+     , srt=-90
+     ,labels = c('Reject   nothing,\naccept  everything')
+     )
+text (1.8, 0.2
+     , srt=-90
+     ,labels = expression('Reject   '* {theta< 0} * '    Accept  '* {theta>=0} )
+     )
+text (2.5, 0.2
+     , srt=-90
+     ,labels = expression('Reject   '* {theta<=0} * '    Accept  '* {theta> 0} )
+     )
+```
+
+To prove that the error rate is at most 5%, we consider each of the three
+possible "truths" in turn:
+
+**Possibility 1/3: **
+If $\theta<0$, then only the last two bins, when $\bar{x}>1.64$,
+constitute an error. For any $\theta<0$,
+the probability
+of observing $\bar{x}>1.64$ is at most 5%.
+Of course, for $\theta$ which is truly much smaller than zero, the
+probability of error will be much smaller than 5%.
+
+**Possibility 2/3: **
+If $\theta=0$, then only the outer two bins, when $|\bar{x}|>1.96$,
+constitute an error. And the probability, assuming $\theta=0$,
+of observing $|\bar{x}|>1.96$ is 5%.
+
+**Possibility 3/3: **
+If $\theta>0$, then only the first two bins, when $\bar{x}<-1.64$,
+constitute an error. For any $\theta>0$,
+the probability
+of observing $\bar{x}<-1.64$ is at most 5%.
+Of course, for $\theta$ which is truly much greater than zero, the
+probability of error will be much smaller than 5%.
+
+&nbsp;
+
+&nbsp;
+<div style="text-align:right">
+***by [Aaron](https://aaronmcdaid.github.io/), 29th October 2017***
+</div>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'aaron-mcdaid'; // required: replace example with your forum shortname
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>

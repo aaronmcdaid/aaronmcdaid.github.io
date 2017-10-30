@@ -1,3 +1,7 @@
+---
+title: "*Unit information priors and model selection*"
+---
+
 &nbsp;
 
 <div style="border:1px solid black ; text-align:center">
@@ -13,16 +17,15 @@ Statistics and C++, and other fun projects
 
 # &nbsp;
 
-# *Unit information priors and model selection*
 <div style="text-align:right">
-***by [Aaron](https://aaronmcdaid.github.io/), 29th October 2017***
+***by [Aaron](https://aaronmcdaid.github.io/), 30th October 2017***
 </div>
 
 # &nbsp;
 
 This is the first in a series of posts I hope to wrote on model selection and the use of *unit information priors*.
 I don't claim any great novelty in this post, I'm just writing up some simple experiments I'm doing to help me develop more intuition.
-Hope you find it interesting, and don't hesitate to contact if you have any comments!
+Hope you find it interesting, and don't hesitate to contact if you have any comments! I want feedback, please :-)
 
 The basic issue that I'm going to tackle is that you have two models and an observed dataset which you know was generated from one of those two models,
 and you want to estimate ("select") which of the models was used to generate the dataset.
@@ -387,6 +390,23 @@ d[
     abline(v=1, col='grey')
 }] %>% invisible
 ```
+
+The models used in this blog post are quite simple; we're really just testing if the precision (or variance) is
+different from 1.0. Other, more conventional, methods exist for this.
+However, if you have more than two models, and those models are very complex, it can be difficult
+to discover a suitable [test statistic](https://en.wikipedia.org/wiki/Test_statistic) and to correctly
+identify a suitable threshold to apply to the observed test statistic.
+
+For some, but not all, complex models, a *unit information prior* can be identified in a relatively straightforward
+manner. This allows the integrated log-likelihoods to be computed easily, and therefore allows us to
+apply the Neyman-Pearon lemma in this approximate manner.
+I say "approximate" because we're not using the "true" prior (assuming one exists);
+where the true prior is known (the "exact" case above), we essentially have a point hypothesis.
+
+Very complex models can be used in this framework, as long as you have distributions with
+[conjugate prior](https://en.wikipedia.org/wiki/Conjugate_prior#Continuous_distributions). We used Gamma above, as it is conjugate to the Normal distribution where
+the mean is known.
+
 
 Thanks for making it this far! I'd love feedback, see my Twitter handle and my email address at the top of the page.
 

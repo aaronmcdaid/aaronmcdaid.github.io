@@ -21,6 +21,7 @@ Statistics and C++, and other fun projects
 
 Recent posts:
 
+*  [*'cambda' . A C++14 library to write anonymous functions in Lisp*](blog.posts/cambda/) - 14th Nov 2017
 *  [*A five-decision testing procedure*](blog.posts/five.decision.rule/) - 30th Oct 2017
 *  [*Unit information priors and model selection*](blog.posts/unit.information.priors/) - 30th Oct 2017
 *  [*Countdown solver, written in Haskell*](blog.posts/countdown.in.haskell/) - 29th Oct 2017

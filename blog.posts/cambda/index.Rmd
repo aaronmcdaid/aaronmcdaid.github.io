@@ -1,0 +1,65 @@
+---
+title: "*'cambda'* . A C++14 library to write anonymous functions in Lisp"
+---
+
+<style type="text/css">
+body{ font-size: 20px; }
+</style>
+
+&nbsp;
+
+<div style="border:1px solid black ; text-align:center">
+
+# [Aaron McDaid](https://aaronmcdaid.github.io/)
+
+Statistics and C++, and other fun projects
+
+`aaron.mcdaid@gmail.com`
+
+[`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+</div>
+
+# &nbsp;
+
+<div style="text-align:right">
+***by [Aaron](https://aaronmcdaid.github.io/), 14th November 2017***
+
+[(code for this document)](index.Rmd)
+</div>
+
+# &nbsp;
+
+A brief note, to be extended when I return from my three week try to Nepal! ...
+
+Just go to the ['cambda' page on github](https://github.com/aaronmcdaid/cambda).
+The README there explains the current state of the project.
+
+This is a very new and incomplete project.
+I had the idea just before I attended the [Meeting C++ 2017 conference](https://www.meetingcpp.com/2017/), an excellent conference.
+
+If you don't yet know why C++ developers love to compute and test everything at compile time, just see this excellent talk by [Ben Deane & Jason Turner "constexpr ALL the things!"](https://www.youtube.com/watch?v=HMB9oXFobJc)
+
+This project was inspired by a 'ranges' project that I'm working on, which I think I will call `orange`, as I needed improved lambda support to do the compile-testing that I want.
+
+Even if it's not very useful to others, I found it very interesting to put it together!
+I think I will find it very useful in many of my future projects, at least for testing.
+
+&nbsp;
+
+&nbsp;
+<div style="text-align:right">
+***by [Aaron](https://aaronmcdaid.github.io/), 14th November 2017***
+</div>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'aaron-mcdaid'; // required: replace example with your forum shortname
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>

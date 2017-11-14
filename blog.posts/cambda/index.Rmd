@@ -1,5 +1,5 @@
 ---
-title: "*'cambda'* . A C++14 library to write anonymous functions in Lisp"
+title: "*'cambda'* . A C++14 library to write anonymous functions in a Lisp style"
 ---
 
 <style type="text/css">
@@ -33,6 +33,10 @@ A brief note, to be extended when I return from my three week try to Nepal! ...
 
 Just go to the ['cambda' page on github](https://github.com/aaronmcdaid/cambda).
 The README there explains the current state of the project.
+
+It offers and alternative to conventional [C++ lambdas](https://stackoverflow.com/questions/7627098/what-is-a-lambda-expression-in-c11#7627218) that can be used with `constexpr` and in unevaluated contexts.
+I might extend it to allow easier computation of types at compile time as existing facilities can be frustrating to use at times.
+
 
 This is a very new and incomplete project.
 I had the idea just before I attended the [Meeting C++ 2017 conference](https://www.meetingcpp.com/2017/), an excellent conference.

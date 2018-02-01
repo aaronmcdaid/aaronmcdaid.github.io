@@ -8,6 +8,13 @@ body{ font-size: 24px; }
 
 <div style="border:1px solid black ; text-align:center">
 
+<table>
+<tr>
+<td align="left">
+<img src="GithubProfilePic.jpeg" width="50%">
+</td>
+<td>
+
 # [Aaron McDaid](https://aaronmcdaid.github.io/)
 
 Statistics and C++, and other fun projects
@@ -15,6 +22,8 @@ Statistics and C++, and other fun projects
 `aaron.mcdaid@gmail.com`
 
 [`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+</td>
+</table>
 </div>
 
 &nbsp;

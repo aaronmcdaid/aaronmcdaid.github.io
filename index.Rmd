@@ -11,7 +11,7 @@ body{ font-size: 24px; }
 <table>
 <tr>
 <td align="left">
-<img src="GithubProfilePic.jpeg" width="50%">
+<img src="GithubProfilePic.jpeg" width="60%">
 </td>
 <td>
 
@@ -21,7 +21,11 @@ Statistics and C++, and other fun projects
 
 `aaron.mcdaid@gmail.com`
 
-[`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+
+
+[![it](larrybird-2-small.png)`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+
+[github.com/aaronmcdaid](https://github.com/aaronmcdaid/)
 </td>
 </table>
 </div>

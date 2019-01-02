@@ -17,7 +17,7 @@ body{ font-size: 24px; }
 
 # [Aaron McDaid](https://aaronmcdaid.github.io/)
 
-Statistics and C++, and other fun projects
+Statistics and Python and C++, and other fun projects
 
 `aaron.mcdaid@gmail.com`
 
@@ -42,7 +42,7 @@ Recent posts:
 
 &nbsp;
 
-I'll write about statistics and programming languages, usually C++.
+I'll write about statistics and programming languages, usually Python nowadays.
 Really, I'll just try to document the fun stuff I'm working on, as well as more 'sensible'
 stuff related to my career.
 

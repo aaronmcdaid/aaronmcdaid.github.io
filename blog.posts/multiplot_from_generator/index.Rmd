@@ -1,5 +1,5 @@
 ---
-title: "*A simple Jupyter trick to generate a grid of plots*"
+title: "*Simple grid of plots in Python Jupyter*"
 output: html_document
 ---
 
@@ -32,44 +32,39 @@ Statistics and Python and C++, and other fun projects
 library(knitr)
 knitr::opts_chunk$set(engine.path = list(python = '/usr/bin/python3.6'))
 ```
-# &nbsp;
-
-When searching online for how to do multiple plots in a Python Jupyter notebook, you often
-get results like this (["Multiple subplots"](https://matplotlib.org/gallery/subplots_axes_and_figures/subplot.html)):
-
 ```{python, echo=F}
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 ```
 
-```{python, eval=F}
+# &nbsp;
+
+
+When searching online for how to do multiple plots in a Python Jupyter notebook, you often
+get are told to write code like this (["Multiple subplots"](https://matplotlib.org/gallery/subplots_axes_and_figures/subplot.html)):
+
+```{python, dpi=50, fig.width=6, fig.height=4, fig.align='center'}
 xs = np.linspace(-1, 1)
-plt.subplot(1,2,1)
+plt.subplot(2,2,1)
 plt.plot(xs, np.sin(xs))
-plt.subplot(1,2,2)
+plt.subplot(2,2,2)
 plt.plot(xs, np.cos(xs))
+plt.subplot(2,2,3)
+plt.plot(xs, np.tan(xs))
 plt.show()
 ```
 
-```{python, echo=F, dpi=50, fig.width=6, fig.height=4, fig.align='center'}
-xs = np.linspace(-1, 1)
-plt.subplot(1,2,1)
-plt.plot(xs, np.sin(xs))
-plt.subplot(1,2,2)
-plt.plot(xs, np.cos(xs))
-plt.show()
-```
+This works well. However, I find this difficult for a number of reasons. It requires you know the number of items in advance
+and it is necessary to manually keep track of the coordinates, making the correct call to `subplot` each time.
+Also, it mixes up your plotting code with this subplot-management code.
 
-However, I find that difficult for a number of reasons. It requires you know the number of items in advance
-and it is necessary to manually keep track of the coordinates. Also, it mixes up the code for plotting
-with the subplot-management code.
-
-So instead, here is a very simple trick to allow you to specify all your plots, separated by `yield`:
+So instead, here is a simple trick to allow you to specify all your plots, separated by `yield`:
 
 ```{python, eval=F}
 def demo_plot_and_yield():
     xs = np.linspace(-1, 1)
+    # Put a 'yield' before every subplot, including the first one:
     yield
     plt.plot(xs, np.sin(xs))
     yield
@@ -85,25 +80,42 @@ def demo_plot_and_yield():
 ***Note: There must be a `yield` before every plot, _including the first one_.***
 
 Then you can send that function to `multiplot_from_generator` (defined below) along
-with the desired number of columns (in this case `3`) and it will generate this.
-
-![optional caption text](figures/Screenshot.png)
+with the desired number of columns (in this case `3`):
 
 ```{python, eval=F}
 multiplot_from_generator(demo_plot_and_yield(), 3)
 ```
+
+Here is the result in Jupyter:
+
+![optional caption text](figures/Screenshot.png)
+
+## How it works
+
+You simply need to define the `multiplot_from_generator` function as follows.
+Note the `figsize` parameter, which you might override if you don't like
+the default. By default, the width of one row is 15 "inches" as this seems
+to be the width of a Jupyter notebook. Also, by default the subplots are
+square; we do this by setting the height to `15/num_columns`:
+
 ```{python, eval=F}
-def multiplot_from_generator(g, w, figsize=(15,5)):
+def multiplot_from_generator(g, num_columns, figsize_for_one_row=None):
+    # call 'next(g)' to get past the first 'yield'
     next(g)
+
+    # default to 15-inch rows, with square subplots
+    if figsize_for_one_row is None:
+        figsize_for_one_row = (15, 15/num_columns)
+
     try:
         while True:
-            plt.figure(figsize=figsize)
-            for col in range(w):
-                ax = plt.subplot(1, w, col+1)
+            # call plt.figure once per row
+            plt.figure(figsize=figsize_for_one_row)
+            for col in range(num_columns):
+                ax = plt.subplot(1, num_columns, col+1)
                 next(g)
     except StopIteration:
         pass
-
 ```
 
 Thanks for making it this far! I'd love feedback, see my Twitter handle and my email address at the top of the page.

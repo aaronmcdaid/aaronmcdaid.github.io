@@ -32,11 +32,6 @@ Statistics and Python and C++, and other fun projects
 library(knitr)
 knitr::opts_chunk$set(engine.path = list(python = '/usr/bin/python3.6'))
 ```
-```{python, echo=F}
-import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-```
 
 # &nbsp;
 
@@ -44,6 +39,11 @@ import matplotlib.pyplot as plt
 When searching online for how to do multiple plots in a Python Jupyter notebook, you often
 get are told to write code like this (["Multiple subplots"](https://matplotlib.org/gallery/subplots_axes_and_figures/subplot.html)):
 
+```{python}
+import matplotlib
+import numpy as np
+import matplotlib.pyplot as plt
+```
 ```{python, dpi=50, fig.width=6, fig.height=4, fig.align='center'}
 xs = np.linspace(-1, 1)
 plt.subplot(2,2,1)
@@ -90,7 +90,7 @@ Here is the result in Jupyter:
 
 ![optional caption text](figures/Screenshot.png)
 
-## How it works
+## How to enable it
 
 You simply need to define the `multiplot_from_generator` function as follows.
 Note the `figsize` parameter, which you might override if you don't like
@@ -117,6 +117,20 @@ def multiplot_from_generator(g, num_columns, figsize_for_one_row=None):
     except StopIteration:
         pass
 ```
+
+## How it works
+
+`multiplot_from_generator` sets up the rows and columns in a loop
+and then calls `next(g)` each time in order to force the next
+piece of plotting code in the generator to be executed.
+
+`next(g)` causes the generator to run until the next `yield`.
+
+I did try a different design where the `yield` was required after (not before)
+each subplot. But that ran into difficulties where I needed to delete
+the last subplot. So this design, with the `yield` in front` works better.
+
+&nbsp;
 
 Thanks for making it this far! I'd love feedback, see my Twitter handle and my email address at the top of the page.
 

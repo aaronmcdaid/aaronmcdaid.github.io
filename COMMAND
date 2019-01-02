@@ -1,0 +1,1 @@
+Rscript -e "require(knitr); require(rmarkdown); render('index.Rmd')" && google-chrome index.html

@@ -1,0 +1,27 @@
+
+
+<style type="text/css">
+body{ font-size: 16px; }
+</style>
+
+&nbsp;
+
+<div style="border:1px solid black ; text-align:center">
+
+# [Aaron McDaid](https://aaronmcdaid.github.io/)
+
+Statistics and Python and C++, and other fun projects
+
+`aaron.mcdaid@gmail.com`
+
+[`@aaronmcdaid`](https://twitter.com/aaronmcdaid)
+</div>
+
+# &nbsp;
+
+<div style="text-align:right">
+***by [Aaron](https://aaronmcdaid.github.io/), `r params$publication_date`***
+
+
+[(code for this document)](index.Rmd)
+</div>

@@ -114,22 +114,5 @@ the last subplot. So this design, with the `yield` in front` works better.
 
 Thanks for making it this far! I'd love feedback, see my Twitter handle and my email address at the top of the page.
 
-&nbsp;
-
-&nbsp;
-<div style="text-align:right">
-***by [Aaron](https://aaronmcdaid.github.io/), `r params$publication_date`***
-</div>
-
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-    var disqus_shortname = 'aaron-mcdaid'; // required: replace example with your forum shortname
-    /* * * DON'T EDIT BELOW THIS LINE * * */
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+```{r child='../_header_and_footer/footer.Rmd'}
+```

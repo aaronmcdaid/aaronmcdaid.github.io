@@ -1,6 +1,8 @@
 ---
 title: "*Simple grid of plots in Python Jupyter*"
 output: html_document
+params:
+    publication_date: "2nd January 2019"
 ---
 
 <style type="text/css">
@@ -23,7 +25,8 @@ Statistics and Python and C++, and other fun projects
 # &nbsp;
 
 <div style="text-align:right">
-***by [Aaron](https://aaronmcdaid.github.io/), 2nd January 2019***
+***by [Aaron](https://aaronmcdaid.github.io/), `r params$publication_date`***
+
 
 [(code for this document)](index.Rmd)
 </div>
@@ -138,7 +141,7 @@ Thanks for making it this far! I'd love feedback, see my Twitter handle and my e
 
 &nbsp;
 <div style="text-align:right">
-***by [Aaron](https://aaronmcdaid.github.io/), 2nd January 2019***
+***by [Aaron](https://aaronmcdaid.github.io/), `r params$publication_date`***
 </div>
 
 <div id="disqus_thread"></div>

@@ -228,16 +228,16 @@ body{ font-size: 16px; }
 <p><span class="math display">\[ \mathrm{Var}(\hat\mu_A) = \frac1{n_A} \hat\sigma_{pooled} \]</span></p>
 <p><span class="math display">\[ \mathrm{Var}(\hat\mu_B) = \frac1{n_B} \hat\sigma_{pooled} \]</span></p>
 <p>The variance of a sum (or difference) is the sum of the variances. Therefore, if we estimate the difference in the means as</p>
-<p><span class="math display">\[ \hat\Delta = (\hat\mu_B - \hat\mu_A) \]</span></p>
-<p>then the variance of the estimator <span class="math inline">\(\hat\Delta\)</span> is <span class="math display">\[
+<p><span class="math display">\[ {\hat\Delta}= (\hat\mu_B - \hat\mu_A) \]</span></p>
+<p>then the variance of the estimator <span class="math inline">\({\hat\Delta}\)</span> is <span class="math display">\[
 \begin{aligned}
-    \mathrm{Var}(\hat\Delta)
-    &amp; = \mathrm{Var}(\hat\mu_B - \hat\mu_A) \\
+    {\operatorname{Var}({\hat\Delta})}&amp; = \mathrm{Var}(\hat\mu_B - \hat\mu_A) \\
     &amp; = \mathrm{Var}(\hat\mu_A) + \mathrm{Var}(\hat\mu_B) \\
     &amp; = \frac1{n_A}\hat\sigma^2_{pooled}
      +\frac1{n_B}\hat\sigma^2_{pooled}
 \end{aligned}
 \]</span></p>
+<p>Now, we have the estimate of the effect, <span class="math inline">\({\hat\Delta}\)</span>, and the variance of that estimate, <span class="math inline">\({\operatorname{Var}({\hat\Delta})}\)</span>.</p>
 <pre class="python"><code>import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt</code></pre>

@@ -13,6 +13,9 @@ library(knitr)
 knitr::opts_chunk$set(engine.path = list(python = '/usr/bin/python3.6'))
 ```
 
+\newcommand{\HatDelta}{\hat\Delta}
+\newcommand{\VarHatDelta}{\operatorname{Var}(\HatDelta)}
+
 # &nbsp;
 
 
@@ -51,18 +54,21 @@ $$ \mathrm{Var}(\hat\mu_B) = \frac1{n_B} \hat\sigma_{pooled} $$
 The variance of a sum (or difference) is the sum of the variances.
 Therefore, if we estimate the difference in the means as
 
-$$ \hat\Delta = (\hat\mu_B - \hat\mu_A) $$
+$$ \HatDelta = (\hat\mu_B - \hat\mu_A) $$
 
-then the variance of the estimator $\hat\Delta$ is
+then the variance of the estimator $\HatDelta$ is
 $$
 \begin{aligned}
-    \mathrm{Var}(\hat\Delta)
+    \VarHatDelta
     & = \mathrm{Var}(\hat\mu_B - \hat\mu_A) \\
     & = \mathrm{Var}(\hat\mu_A) + \mathrm{Var}(\hat\mu_B) \\
     & = \frac1{n_A}\hat\sigma^2_{pooled}
      +\frac1{n_B}\hat\sigma^2_{pooled}
 \end{aligned}
 $$
+
+Now, we have the estimate of the effect, $\HatDelta$, and the variance of
+that estimate, $\VarHatDelta$.
 
 ```{python}
 import matplotlib

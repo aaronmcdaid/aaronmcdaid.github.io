@@ -1,0 +1,161 @@
+---
+title: "*REGEL - AB Testing with the Ratio of the Expected Gain to the Expected Loss*"
+output: html_document
+params:
+    publication_date: "2nd January 2019"
+---
+
+```{r child='../_header_and_footer/header.Rmd'}
+```
+
+```{r setup, echo=FALSE}
+library(knitr)
+knitr::opts_chunk$set(engine.path = list(python = '/usr/bin/python3.6'))
+```
+
+# &nbsp;
+
+
+In this post I propose a simple method for AB Testing, using Bayesian ideas.
+But my evaluation is frequentist, as I discuss the Type I error rate.
+And even though there are a lot of complex simulations in this post, the method itself is quite simple and efficient -
+it uses only the information that is required to perform a t-test.
+
+I think it's a new method, but please tell me if you recognize anything!
+
+The basic idea is to answer these two questions:
+
+ - When do we stop the experiment?
+ - And, once stopped, how do we choose between these three possible decisions?
+    1. _Positive_ - variant B is better.
+    1. _Neutral_ - unclear which variant is better.
+    1. _Negative_ - variant A is better.
+
+If the effect is strong, we want the experiment to stop early.
+
+## Student's t-test
+
+To begin, let's recap the [t-test](https://en.wikipedia.org/wiki/Student%27s_t-test#Equal_or_unequal_sample_sizes,_equal_variance).
+We have a sample from each of the two group, with estimates of the mean in each group, $\hat\mu_A$ and $\hat\mu_B$.
+We also have [estimates](https://en.wikipedia.org/wiki/Bessel%27s_correction) of the variance in each group, $\hat\sigma^2_A$ and $\hat\sigma^2_B$.
+
+The _pooled variance estimate_ is a weighted combination of the two variance estimates:
+
+$$ \hat\sigma_{pooled} = \frac{(n_A-1)\hat\sigma^2_A + (n_B-1)\hat\sigma^2_B}{n_A+n_B-2} $$
+The variance of the estimator of the mean tells us how close the estimated mean is to the true mean:
+
+$$ \mathrm{Var}(\hat\mu_A) = \frac1{n_A} \hat\sigma_{pooled} $$
+
+$$ \mathrm{Var}(\hat\mu_B) = \frac1{n_B} \hat\sigma_{pooled} $$
+
+The variance of a sum (or difference) is the sum of the variances.
+Therefore, if we estimate the difference in the means as
+
+$$ \hat\Delta = (\hat\mu_B - \hat\mu_A) $$
+
+then the variance of the estimator $\hat\Delta$ is
+$$
+\begin{aligned}
+    \mathrm{Var}(\hat\Delta)
+    & = \mathrm{Var}(\hat\mu_B - \hat\mu_A) \\
+    & = \mathrm{Var}(\hat\mu_A) + \mathrm{Var}(\hat\mu_B) \\
+    & = \frac1{n_A}\hat\sigma^2_{pooled}
+     +\frac1{n_B}\hat\sigma^2_{pooled}
+\end{aligned}
+$$
+
+```{python}
+import matplotlib
+import numpy as np
+import matplotlib.pyplot as plt
+```
+```{python, dpi=50, fig.width=6, fig.height=4, fig.align='center'}
+xs = np.linspace(-1, 1)
+plt.subplot(2,2,1)
+plt.plot(xs, np.sin(xs))
+plt.subplot(2,2,2)
+plt.plot(xs, np.cos(xs))
+plt.subplot(2,2,3)
+plt.plot(xs, np.tan(xs))
+plt.show()
+```
+
+This works well. However, I find this difficult for a number of reasons. It requires you know the number of items in advance
+and it is necessary to manually keep track of the coordinates, making the correct call to `subplot` each time.
+Also, it mixes up your plotting code with this subplot-management code.
+
+So instead, here is a simple trick to allow you to specify all your plots, separated by `yield`:
+
+```{python, eval=F}
+def demo_plot_and_yield():
+    xs = np.linspace(-1, 1)
+    # Put a 'yield' before every subplot, including the first one:
+    yield
+    plt.plot(xs, np.sin(xs))
+    yield
+    plt.plot(xs, np.cos(xs))
+    yield
+    plt.plot(xs, np.cos(xs))
+    yield
+    plt.plot(xs, np.tan(xs))
+    yield
+    plt.plot(xs, np.cos(xs))
+```
+
+***Note: There must be a `yield` before every plot, _including the first one_.***
+
+Then you can send that function to `multiplot_from_generator` (defined below) along
+with the desired number of columns (in this case `3`):
+
+```{python, eval=F}
+multiplot_from_generator(demo_plot_and_yield(), 3)
+```
+
+Here is the result in Jupyter:
+
+## How to enable it
+
+You simply need to define the `multiplot_from_generator` function as follows.
+Note the `figsize` parameter, which you might override if you don't like
+the default. By default, the width of one row is 15 "inches" as this seems
+to be the width of a Jupyter notebook. Also, by default the subplots are
+square; we do this by setting the height to `15/num_columns`:
+
+```{python, eval=F}
+def multiplot_from_generator(g, num_columns, figsize_for_one_row=None):
+    # call 'next(g)' to get past the first 'yield'
+    next(g)
+
+    # default to 15-inch rows, with square subplots
+    if figsize_for_one_row is None:
+        figsize_for_one_row = (15, 15/num_columns)
+
+    try:
+        while True:
+            # call plt.figure once per row
+            plt.figure(figsize=figsize_for_one_row)
+            for col in range(num_columns):
+                ax = plt.subplot(1, num_columns, col+1)
+                next(g)
+    except StopIteration:
+        pass
+```
+
+## How it works
+
+`multiplot_from_generator` sets up the rows and columns in a loop
+and then calls `next(g)` each time in order to force the next
+piece of plotting code in the generator to be executed.
+
+`next(g)` causes the generator to run until the next `yield`.
+
+I did try a different design where the `yield` was required after (not before)
+each subplot. But that ran into difficulties where I needed to delete
+the last subplot. So this design, with the `yield` in front` works better.
+
+&nbsp;
+
+Thanks for making it this far! I'd love feedback, see my Twitter handle and my email address at the top of the page.
+
+```{r child='../_header_and_footer/footer.Rmd'}
+```

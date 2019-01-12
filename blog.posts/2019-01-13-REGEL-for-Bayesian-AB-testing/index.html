@@ -231,13 +231,26 @@ body{ font-size: 16px; }
 <p><span class="math display">\[ {\hat\Delta}= (\hat\mu_B - \hat\mu_A) \]</span></p>
 <p>then the variance of the estimator <span class="math inline">\({\hat\Delta}\)</span> is <span class="math display">\[
 \begin{aligned}
-    {\operatorname{Var}({\hat\Delta})}&amp; = \mathrm{Var}(\hat\mu_B - \hat\mu_A) \\
+    {\operatorname{Var}[{\hat\Delta}]}&amp; = \mathrm{Var}(\hat\mu_B - \hat\mu_A) \\
     &amp; = \mathrm{Var}(\hat\mu_A) + \mathrm{Var}(\hat\mu_B) \\
     &amp; = \frac1{n_A}\hat\sigma^2_{pooled}
      +\frac1{n_B}\hat\sigma^2_{pooled}
 \end{aligned}
 \]</span></p>
-<p>Now, we have the estimate of the effect, <span class="math inline">\({\hat\Delta}\)</span>, and the variance of that estimate, <span class="math inline">\({\operatorname{Var}({\hat\Delta})}\)</span>.</p>
+<p>Now, we have the estimate of the effect, <span class="math inline">\({\hat\Delta}\)</span>, and the variance of that estimate, <span class="math inline">\({\operatorname{Var}[{\hat\Delta}]}\)</span>, and we could proceed to compute a p-value. However, in this post I’ll take a different approach.</p>
+</div>
+<div id="normality-and-the-posterior" class="section level2">
+<h2>Normality, and the posterior</h2>
+<p>I’m going to assume the likelihood function is <a href="https://en.wikipedia.org/wiki/Gaussian_distribution">normal</a>. This will be an important assumption later in this post when I discuss sufficient statistics. But it really just means that I’m assuming the sample size is reasonably large. If you want to use just a few dozen samples, then this method isn’t for you!</p>
+<p>I’m just using a flat prior here. The prior doesn’t matter if you have a large sample size. I <em>do</em> find other priors really interesting, and I really enjoyed writing <a href="../unit.information.priors/">this blog post</a> about <em>unit information priors</em>! But it doesn’t matter for large sample sizes.</p>
+<p>Therefore, the posterior distribution used in this method is a normal distribution:</p>
+<p><span class="math display">\[ \Delta|\cdot \sim \mathcal{N}({\hat\Delta}, {\operatorname{Var}[{\hat\Delta}]}) \]</span></p>
+</div>
+<div id="expected-loss" class="section level2">
+<h2>Expected Loss</h2>
+<p>The posterior is interpreted as an estimate of the effect, and the uncertainty of that effect. Imagine drawing numbers randomly from the posterior, then replacing the positive numbers with zero, and then compute the mean of this distribution. This is the <a href="https://medium.com/convoy-tech/the-power-of-bayesian-a-b-testing-f859d2219d5"><em>expected loss</em></a> of variant B.</p>
+<p><span class="math display">\[ \mathbb{E}\mathopen{}\left[\operatorname{min}\left(0, \mathcal{N}\mathopen{}\left({\hat\Delta}, {\operatorname{Var}[{\hat\Delta}]}\right)\mathclose{}\right)\right]\mathclose{} \]</span></p>
+<p>In the <a href="https://github.com/aaronmcdaid/bayesian.risk/blob/master/bayesianAB/risk.py">library associated with this post</a> includes python code for computing this, named <a href="https://github.com/aaronmcdaid/bayesian.risk/blob/master/bayesianAB/risk.py#L18"><code>slow_risk</code></a>. In that library, I use the term <em>risk</em> as shorthand for <em>expected loss</em>.</p>
 <pre class="python"><code>import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt</code></pre>

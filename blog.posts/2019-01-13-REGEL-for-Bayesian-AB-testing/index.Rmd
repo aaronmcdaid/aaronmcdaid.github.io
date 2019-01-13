@@ -12,6 +12,11 @@ params:
 library(knitr)
 knitr::opts_chunk$set(engine.path = list(python = '/usr/bin/python3.6'))
 ```
+```{python, echo=F}
+import matplotlib
+import numpy as np
+import matplotlib.pyplot as plt
+```
 
 \newcommand{\HatDelta}{\hat\Delta}
 \newcommand{\VarHatDelta}{\operatorname{Var}[\HatDelta]}
@@ -110,10 +115,12 @@ $$ EG = \mathbb{E}\mathopen{}\left[\operatorname{max}\left(0, \mathcal{N}\mathop
 ## Why compute the EL and EG?
 
 As we run the experiment, we compute both EL and EG as often as we like. Perhaps after every data point, or perhaps every hour.
-If there truly is no difference between the performance of A and the performance of B, then both EL and EG will eventually
-reach zero.
+If there truly is no difference between the performance of A and the performance of B,
+then both EL and EG will gradually approach zero.
 They will never reach exactly zero. In fact, EL will always be negative, and EG will always be positive.
 But they will each become arbitrarily to zero if you keeping running the experiment.
+For the remainder of this post, I will usually use $(-EL)$ in the formulae as it
+will always be positive and is easier to reason about.
 
 If B is better, i.e. the true effect $\Delta_0 > 0$, then EL will tend to zero and EG will tend to $\Delta_0$.
 Formally, we can say that as the number of samples $n$ tends to infinity,
@@ -183,6 +190,62 @@ None of the simulations run for much longer than the mean runtime.
 Of course, if our goal is to simply minimize the maximum runtime, we could just insert a hard upper
 bound on the sample size. However, for a variety of reasons, I want a stopping
 criterion and decision criterion based strictly on EL and EG and on nothing else.
+
+## Decision time: Negative, Neutral, or Positive?
+
+Once the stopping condition has been reached and the experiment has been stopped, we still
+have to decide on the outcome. Which variant, if any, is better?
+This is done using the ratio of EG to the EL. If the ratio is very large or very small,
+we have a Positive or Negative decision. Otherwise, we have a Neutral decision.
+For this blog post, I use a ratio of 350. In other words, after the experiment has stopped:
+
+ - **Positive** , i.e. variant B is better, if $EG > 350 \times (-EL)$
+ - **Negative** , i.e. variant A is better, if $EG < \frac1{350} \times (-EL)$
+ - **Neutral** , otherwise
+
+```{python, dpi=50, fig.width=6, fig.height=6, fig.align='center', echo=F}
+from bayesianAB.risk import slow_risk
+from scipy.optimize import newton
+
+# define the stopping criterion
+def _REGEL_stopping_criterion(EG, EL):
+    return EG*EL*(EG+EL)
+
+# we stop when this threshold is reached:
+threshold = 1
+
+# For each possible EL, use Newton-Raphson to find the EG at
+# which the stopping criterion is first reached.
+
+ELs = np.linspace(0.0001, 100, 100000)
+EGs = np.array([
+        newton( # Newton-Raphson
+            lambda EG: _REGEL_stopping_criterion(EG, EL) - threshold
+        , 1 # initial guess for Newton-Raphson
+        ) for EL in ELs])
+
+# Plot the 'surface' along which the stopping is first reached
+plt.loglog(ELs, EGs, label='Neutral')
+plt.xlabel("""EL""")
+plt.ylabel('EG')
+
+plt.text(0.1, 0.2,'$stopped$')
+plt.text(1, 2,'$not$ $yet$ $stopped$')
+
+ratio = 350
+positive_decisions = EGs/ELs > ratio
+negative_decisions = EGs/ELs < 1/ratio
+plt.plot(ELs[positive_decisions], EGs[positive_decisions], color='green', linewidth=5, label='Positive')
+plt.plot(ELs[negative_decisions], EGs[negative_decisions], color='red', linewidth=5, label='Negative')
+plt.legend()
+plt.show()
+```
+<center>
+_Figure 3_: The curve is the range of (EL,EG) pairs for which the stopping criterion is reached.
+The colour tells us which decision is taken.
+
+&nbsp;
+</center>
 
 
 &nbsp;

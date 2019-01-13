@@ -88,18 +88,37 @@ Therefore, the posterior distribution used in this method is a normal distributi
 
 $$ \Delta|\cdot \sim \mathcal{N}(\HatDelta, \VarHatDelta) $$
 
-## Expected Loss
+## Expected Loss and Expected Gain
 
 The posterior is interpreted as an estimate of the effect, and the uncertainty of that effect.
 Imagine drawing numbers randomly from the posterior, then replacing the positive numbers with zero,
 and then compute the mean of this distribution.
 This is the [_expected loss_](https://medium.com/convoy-tech/the-power-of-bayesian-a-b-testing-f859d2219d5) of variant B.
 
-$$ \mathbb{E}\mathopen{}\left[\operatorname{min}\left(0, \mathcal{N}\mathopen{}\left(\HatDelta, \VarHatDelta\right)\mathclose{}\right)\right]\mathclose{} $$
+$$ EL = \mathbb{E}\mathopen{}\left[\operatorname{min}\left(0, \mathcal{N}\mathopen{}\left(\HatDelta, \VarHatDelta\right)\mathclose{}\right)\right]\mathclose{} $$
 
 In the [library associated with this post](https://github.com/aaronmcdaid/bayesian.risk/blob/master/bayesianAB/risk.py)
 includes python code for computing this, named [`slow_risk`](https://github.com/aaronmcdaid/bayesian.risk/blob/master/bayesianAB/risk.py#L18).
 In that library, I use the term _risk_ as shorthand for _expected loss_.
+
+I define _expected gain_ as the opposite, i.e. the result when replacing negative values with zero.
+
+$$ EG = \mathbb{E}\mathopen{}\left[\operatorname{max}\left(0, \mathcal{N}\mathopen{}\left(\HatDelta, \VarHatDelta\right)\mathclose{}\right)\right]\mathclose{} $$
+
+## Why compute the EL and EG?
+
+As we run the experiment, we compute both EL and EG as often as we like. Perhaps after every data point, or perhaps every hour.
+If there truly is no difference between the performance of A and the performance of B, then both EL and EG will eventually
+reach zero.
+They will never reach exactly zero. In fact, EL will always be negative, and EG will always be positive.
+But they will each become arbitrarily to zero if you keeping running the experiment.
+
+If B is better, i.e. the true effect $\Delta_0 > 0$, then EL will tend to zero and EG will tend to $\Delta_0$.
+Formally, we can say that as the number of samples $n$ tends to infinity,
+
+$$
+    EL = 0
+$$
 
 ```{python}
 import matplotlib

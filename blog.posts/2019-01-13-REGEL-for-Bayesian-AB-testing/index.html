@@ -246,11 +246,21 @@ body{ font-size: 16px; }
 <p>Therefore, the posterior distribution used in this method is a normal distribution:</p>
 <p><span class="math display">\[ \Delta|\cdot \sim \mathcal{N}({\hat\Delta}, {\operatorname{Var}[{\hat\Delta}]}) \]</span></p>
 </div>
-<div id="expected-loss" class="section level2">
-<h2>Expected Loss</h2>
+<div id="expected-loss-and-expected-gain" class="section level2">
+<h2>Expected Loss and Expected Gain</h2>
 <p>The posterior is interpreted as an estimate of the effect, and the uncertainty of that effect. Imagine drawing numbers randomly from the posterior, then replacing the positive numbers with zero, and then compute the mean of this distribution. This is the <a href="https://medium.com/convoy-tech/the-power-of-bayesian-a-b-testing-f859d2219d5"><em>expected loss</em></a> of variant B.</p>
-<p><span class="math display">\[ \mathbb{E}\mathopen{}\left[\operatorname{min}\left(0, \mathcal{N}\mathopen{}\left({\hat\Delta}, {\operatorname{Var}[{\hat\Delta}]}\right)\mathclose{}\right)\right]\mathclose{} \]</span></p>
+<p><span class="math display">\[ EL = \mathbb{E}\mathopen{}\left[\operatorname{min}\left(0, \mathcal{N}\mathopen{}\left({\hat\Delta}, {\operatorname{Var}[{\hat\Delta}]}\right)\mathclose{}\right)\right]\mathclose{} \]</span></p>
 <p>In the <a href="https://github.com/aaronmcdaid/bayesian.risk/blob/master/bayesianAB/risk.py">library associated with this post</a> includes python code for computing this, named <a href="https://github.com/aaronmcdaid/bayesian.risk/blob/master/bayesianAB/risk.py#L18"><code>slow_risk</code></a>. In that library, I use the term <em>risk</em> as shorthand for <em>expected loss</em>.</p>
+<p>I define <em>expected gain</em> as the opposite, i.e. the result when replacing negative values with zero.</p>
+<p><span class="math display">\[ EG = \mathbb{E}\mathopen{}\left[\operatorname{max}\left(0, \mathcal{N}\mathopen{}\left({\hat\Delta}, {\operatorname{Var}[{\hat\Delta}]}\right)\mathclose{}\right)\right]\mathclose{} \]</span></p>
+</div>
+<div id="why-compute-the-el-and-eg" class="section level2">
+<h2>Why compute the EL and EG?</h2>
+<p>As we run the experiment, we compute both EL and EG as often as we like. Perhaps after every data point, or perhaps every hour. If there truly is no difference between the performance of A and the performance of B, then both EL and EG will eventually reach zero. They will never reach exactly zero. In fact, EL will always be negative, and EG will always be positive. But they will each become arbitrarily to zero if you keeping running the experiment.</p>
+<p>If B is better, i.e. the true effect <span class="math inline">\(\Delta_0 &gt; 0\)</span>, then EL will tend to zero and EG will tend to <span class="math inline">\(\Delta_0\)</span>. Formally, we can say that as the number of samples <span class="math inline">\(n\)</span> tends to infinity,</p>
+<p><span class="math display">\[
+    EL = 0
+\]</span></p>
 <pre class="python"><code>import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt</code></pre>

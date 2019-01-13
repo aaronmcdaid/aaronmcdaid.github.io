@@ -117,8 +117,18 @@ If B is better, i.e. the true effect $\Delta_0 > 0$, then EL will tend to zero a
 Formally, we can say that as the number of samples $n$ tends to infinity,
 
 $$
-    EL = 0
+    \lim_{n\rightarrow\infty} EL = \min(0, \Delta_0) \\
 $$
+$$
+    \lim_{n\rightarrow\infty} EG = \max(0, \Delta_0) \\
+$$
+
+We can see this in the following figure, showing how EL and EG behave as the experiment proceeds
+under three different values of the true effect $\Delta_0$: $0.2$, $0$, $0.5$.
+Each plot includes 50 simulated experiments
+![](figures/tendency_for_ELEG.png)
+
+foo
 
 ```{python}
 import matplotlib

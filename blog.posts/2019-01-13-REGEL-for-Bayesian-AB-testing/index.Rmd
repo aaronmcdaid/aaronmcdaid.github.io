@@ -247,6 +247,59 @@ The colour tells us which decision is taken.
 &nbsp;
 </center>
 
+## Why 350?
+
+You might ask why I use a ratio of 350 in the decision criterion.
+That's the first "magic number" in this blog posts.
+The reason is that it gives a
+[Type I error rate](https://en.wikipedia.org/wiki/Type_I_and_type_II_errors#Type_I_error)
+of 10%.
+In other words, if the null hypothesis is true
+(i.e. there is truly no difference between between the two variants)
+and we run an experiment until the REGEL stopping criterion is reached,
+approximately 10% of the simulation will result in a non-Neutral decision.
+5% will be Positive and 5% will be Negative.
+
+I discovered this via simulations. Bear in mind that other stopping criteria will result in a different relationship
+between the decision ratio and the Type I error rate.
+You might be skeptical and wonder how transferable this is. Different simulations with different parameters
+might lead to different results? Actually no, this ratio always gives a Type I error rate of 10% when
+combined with the REGEL stopping criterion, not matter what threshold is used within the stopping criterion (see Figure 4).
+The only requirement is that the threshold be small enough to require at least a few hundred samples.
+
+<center>
+![_Figure 4_:
+{_Left panel_}: No matter what threshold is used for the _REGEL stopping condition_, the
+distribution of the final ratio EG/EL is the same.
+The x-axis is the density, across 1000 simulations, of the value $\log(EG/EL)$
+when the stopping criterion is satisfied. Each colour respresents a different
+threshold. \n
+{_right panel_}: On the other hand, the sample sizes are affected by the threshold.
+A smaller threshold, as expected, leads to longer running experiments.
+](figures/350_is_10percent.png)
+
+&nbsp;
+
+</center>
+
+I also experimented with many other simulations to verify the robustness of this.
+For example, I considered a 10%/90% split between the two variants instead of the usual 50%/50% split.
+But to really prove that this is a general result, some mathematical proof is required.
+So I'll attempt to do so here
+
+(Next couple of paragraphs are quite technical. Although, I think I would like to make them even
+more technical! Maybe you can help me to firm this up.)
+
+As described at the start of this post, we assume the likelihood and the posterior
+are normally distributed.
+This is reasonable given a large enough sample size, and
+also given
+
+_... maths stuff, like sufficient statistics and scale-invariance and so on ..._
+
+
+
+
 
 &nbsp;
 

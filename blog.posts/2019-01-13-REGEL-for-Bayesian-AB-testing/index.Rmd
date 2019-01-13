@@ -26,6 +26,8 @@ it uses only the information that is required to perform a t-test.
 
 I think it's a new method, but please tell me if you recognize anything!
 
+(There is a [library associated with this post on Github](https://github.com/aaronmcdaid/bayesian.risk), where I also include the Jupyter notebook, on )
+
 The basic idea is to answer these two questions:
 
  - **Stopping Criterion**: When do we stop the experiment?

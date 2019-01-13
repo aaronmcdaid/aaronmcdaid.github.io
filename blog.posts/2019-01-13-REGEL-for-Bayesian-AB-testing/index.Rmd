@@ -28,8 +28,8 @@ I think it's a new method, but please tell me if you recognize anything!
 
 The basic idea is to answer these two questions:
 
- - When do we stop the experiment?
- - And, once stopped, how do we choose between these three possible decisions?
+ - **Stopping Criterion**: When do we stop the experiment?
+ - **Decision Criterion**: And, once stopped, how do we choose between these three possible decisions?
     1. _Positive_ - variant B is better.
     1. _Neutral_ - unclear which variant is better.
     1. _Negative_ - variant A is better.
@@ -124,100 +124,49 @@ $$
 $$
 
 We can see this in the following figure, showing how EL and EG behave as the experiment proceeds
-under three different values of the true effect $\Delta_0$: $0.2$, $0$, $0.5$.
-Each plot includes 50 simulated experiments
+under three different values of the true effect $\Delta_0 = 0.2$, $\Delta_0 = 0$, $\Delta_0 = 0.5$.
+Each plot includes 50 simulated experiments:
+
 ![](figures/tendency_for_ELEG.png)
 
-foo
+## When to stop?
 
-```{python}
-import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-```
-```{python, dpi=50, fig.width=6, fig.height=4, fig.align='center'}
-xs = np.linspace(-1, 1)
-plt.subplot(2,2,1)
-plt.plot(xs, np.sin(xs))
-plt.subplot(2,2,2)
-plt.plot(xs, np.cos(xs))
-plt.subplot(2,2,3)
-plt.plot(xs, np.tan(xs))
-plt.show()
-```
+One simple approach, discussed [here](https://medium.com/convoy-tech/the-power-of-bayesian-a-b-testing-f859d2219d5),
+is to end the experiment when either EL or EG become sufficiently close to zero,
+as defined by a user-defined _threshold-of-caring_, $\tau$.
 
-This works well. However, I find this difficult for a number of reasons. It requires you know the number of items in advance
-and it is necessary to manually keep track of the coordinates, making the correct call to `subplot` each time.
-Also, it mixes up your plotting code with this subplot-management code.
+$$\min(-EL, EG) < \tau$$
 
-So instead, here is a simple trick to allow you to specify all your plots, separated by `yield`:
+While it certainly is a simple approach, it has the disadvantage that the _runtime_,
+i.e.  the number of samples needed to reach this stopping condition,
+has a huge variance.
+Sometimes it can take a very long time to reach this stopping condition - and it's likely
+that you will be tempted to simply end the experiment early in that case.
+We see this in the next figure, where 1000 simulations were performed under the null hypothesis
+and then the runtimes were sorted and plotted in blue.
+I normalized the data such that the average runtime is 5,000 samples.
+As you can see in the top right, this simple policy took 60,000 samples to reach this
+simple stopping condition under one of the simulations.
+For comparison, two other stopping conditions are included.
 
-```{python, eval=F}
-def demo_plot_and_yield():
-    xs = np.linspace(-1, 1)
-    # Put a 'yield' before every subplot, including the first one:
-    yield
-    plt.plot(xs, np.sin(xs))
-    yield
-    plt.plot(xs, np.cos(xs))
-    yield
-    plt.plot(xs, np.cos(xs))
-    yield
-    plt.plot(xs, np.tan(xs))
-    yield
-    plt.plot(xs, np.cos(xs))
-```
+![](figures/three_runtimes.png)
 
-***Note: There must be a `yield` before every plot, _including the first one_.***
+The second approach uses the product, instead of the minimum, of the EL and the EG and stops
+the experiment when the product, $(-EL) \times EG$ comes below a predefined threshold.
+As can be seen above, the maximum runtime is much smaller.
 
-Then you can send that function to `multiplot_from_generator` (defined below) along
-with the desired number of columns (in this case `3`):
+The method I present in this paper, which I call _REGEL_ (Ratio of Expected Gain and Expected Loss),
+uses the product of three factors. This is the _REGEL_ stopping condition:
+$$ (-EL) \times (EG{+}(-EL)) \times EG \qquad < \qquad ??? $$
 
-```{python, eval=F}
-multiplot_from_generator(demo_plot_and_yield(), 3)
-```
+When this falls below a predefined threshold (more on this below..), the experiment is stopped.
+As you can see in the plot, the maximum runtime under REGEL is only a little larger than the mean.
+None of the simulations run for much longer than the mean runtime.
 
-Here is the result in Jupyter:
+Of course, if our goal is to simply minimize the maximum runtime, we could just insert a hard upper
+bound on the sample size. However, for a variety of reasons, I am keen to have a stopping
+criterion and decision criterion based strictly on EL and EG and on nothing else.
 
-## How to enable it
-
-You simply need to define the `multiplot_from_generator` function as follows.
-Note the `figsize` parameter, which you might override if you don't like
-the default. By default, the width of one row is 15 "inches" as this seems
-to be the width of a Jupyter notebook. Also, by default the subplots are
-square; we do this by setting the height to `15/num_columns`:
-
-```{python, eval=F}
-def multiplot_from_generator(g, num_columns, figsize_for_one_row=None):
-    # call 'next(g)' to get past the first 'yield'
-    next(g)
-
-    # default to 15-inch rows, with square subplots
-    if figsize_for_one_row is None:
-        figsize_for_one_row = (15, 15/num_columns)
-
-    try:
-        while True:
-            # call plt.figure once per row
-            plt.figure(figsize=figsize_for_one_row)
-            for col in range(num_columns):
-                ax = plt.subplot(1, num_columns, col+1)
-                next(g)
-    except StopIteration:
-        pass
-```
-
-## How it works
-
-`multiplot_from_generator` sets up the rows and columns in a loop
-and then calls `next(g)` each time in order to force the next
-piece of plotting code in the generator to be executed.
-
-`next(g)` causes the generator to run until the next `yield`.
-
-I did try a different design where the `yield` was required after (not before)
-each subplot. But that ran into difficulties where I needed to delete
-the last subplot. So this design, with the `yield` in front` works better.
 
 &nbsp;
 

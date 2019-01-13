@@ -127,7 +127,14 @@ We can see this in the following figure, showing how EL and EG behave as the exp
 under three different values of the true effect $\Delta_0 = 0.2$, $\Delta_0 = 0$, $\Delta_0 = 0.5$.
 Each plot includes 50 simulated experiments:
 
-![](figures/tendency_for_ELEG.png)
+<center>
+![_Figure 1_:
+Trend of EL and EG as samples are gathered.
+50 simulations were run under each of three conditions.
+](figures/tendency_for_ELEG.png)
+
+&nbsp;
+</center>
 
 ## When to stop?
 
@@ -145,11 +152,19 @@ that you will be tempted to simply end the experiment early in that case.
 We see this in the next figure, where 1000 simulations were performed under the null hypothesis
 and then the runtimes were sorted and plotted in blue.
 I normalized the data such that the average runtime is 5,000 samples.
-As you can see in the top right, this simple policy took 60,000 samples to reach this
+As you can see in the top right of _Figure 2_, this simple policy took 60,000 samples to reach this
 simple stopping condition under one of the simulations.
 For comparison, two other stopping conditions are included.
 
-![](figures/three_runtimes.png)
+<center>
+![_Figure 2_:
+Three different stopping criteria are shown here.
+1000 simulations under the null are run until the criterion is reached,
+and then the runtimes (numbers of samples) are sorted and plotted.
+](figures/three_runtimes.png)
+
+&nbsp;
+</center>
 
 The second approach uses the product, instead of the minimum, of the EL and the EG and stops
 the experiment when the product, $(-EL) \times EG$ comes below a predefined threshold.
@@ -159,12 +174,12 @@ The method I present in this paper, which I call _REGEL_ (Ratio of Expected Gain
 uses the product of three factors. This is the _REGEL_ stopping condition:
 $$ (-EL) \times (EG{+}(-EL)) \times EG \qquad < \qquad ??? $$
 
-When this falls below a predefined threshold (more on this below..), the experiment is stopped.
+When this falls below a predefined threshold (I define the threshold later in this post), the experiment is stopped.
 As you can see in the plot, the maximum runtime under REGEL is only a little larger than the mean.
 None of the simulations run for much longer than the mean runtime.
 
 Of course, if our goal is to simply minimize the maximum runtime, we could just insert a hard upper
-bound on the sample size. However, for a variety of reasons, I am keen to have a stopping
+bound on the sample size. However, for a variety of reasons, I want a stopping
 criterion and decision criterion based strictly on EL and EG and on nothing else.
 
 

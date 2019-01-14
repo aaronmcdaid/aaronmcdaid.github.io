@@ -317,7 +317,9 @@ body{ font-size: 16px; }
 </center>
 <p>I also experimented with many other simulations to verify the robustness of this. For example, I considered a 10%/90% split between the two variants instead of the usual 50%/50% split. But to really prove that this is a general result, some mathematical proof is required. So I’ll attempt to do so here</p>
 <p>(Next couple of paragraphs are quite technical. Although, I think I would like to make them even more technical! Maybe you can help me to firm this up.)</p>
-<p>As described at the start of this post, we assume the likelihood and the posterior are normally distributed. This is reasonable given a large enough sample size, and also given</p>
+<p>As described at the start of this post, we assume the likelihood and the posterior are normally distributed. This is reasonable given a large enough sample size, and also given that the model is about the difference of two sample means. In other words, the <a href="https://en.wikipedia.org/wiki/Central_Limit_Theorem">Central Limit Theorem</a> applies.</p>
+<p>This assumption allows us to treat the mean and variance as <a href="https://en.wikipedia.org/wiki/sufficient_statistic"><em>sufficient statistics</em></a> to describe the distribution. The EL and EG are functions of the mean and variance. Also, we can compute the mean and variance from the EL and EG. Therefore, we can say that the EL and EG are sufficient statistics for the posterior distribution.</p>
+<p>This is useful because it means that two different experiments that have the same EL and also have the same EG can be said to be in the same “state”, and the future behaviour of the EL and EG (as new data is observed) is the same in both.</p>
 <p><em>… maths stuff, like sufficient statistics and scale-invariance and so on …</em></p>
 <p> </p>
 <p>Thanks for making it this far! I’d love feedback, see my Twitter handle and my email address at the top of the page.</p>

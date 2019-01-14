@@ -293,7 +293,21 @@ more technical! Maybe you can help me to firm this up.)
 As described at the start of this post, we assume the likelihood and the posterior
 are normally distributed.
 This is reasonable given a large enough sample size, and
-also given
+also given that the model is about the difference of two sample means.
+In other words, the
+[Central Limit Theorem](https://en.wikipedia.org/wiki/Central_Limit_Theorem) applies.
+
+This assumption allows us to treat the mean and variance as [_sufficient statistics_](https://en.wikipedia.org/wiki/sufficient_statistic)
+to describe the distribution.
+The EL and EG are functions of the mean and variance. Also, we can compute the mean and variance
+from the EL and EG.
+Therefore, we can say that the EL and EG are sufficient statistics for the posterior distribution.
+
+This is useful because it means that two different experiments that have the same EL and also
+have the same EG can be said to be in the same "state", and the future behaviour of the EL and EG (as new data is observed)
+is the same in both.
+
+
 
 _... maths stuff, like sufficient statistics and scale-invariance and so on ..._
 

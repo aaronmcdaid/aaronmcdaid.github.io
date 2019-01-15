@@ -247,6 +247,19 @@ The colour tells us which decision is taken.
 &nbsp;
 </center>
 
+You might ask why I use a ratio of 350 as the decision ratio in the decision criterion.
+Before explaining that, I should define the _stopping threshold_.
+Once that is defined, the entire REGEL method is defined.
+
+In the literature, the _threshold of caring_ is the smallest
+...
+
+## Stopping threshold
+
+For the remainder of this post, I will discuss experiments where the stopping criterion is
+of the form $(-EL)(EG-EL)EG < \theta$.
+We also need to define the stopping ...
+
 ## Why 350?
 
 You might ask why I use a ratio of 350 as the decision ratio in the decision criterion.

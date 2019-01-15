@@ -180,7 +180,7 @@ the experiment when the product, $(-EL) \times EG$ comes below a predefined thre
 As can be seen above, the maximum runtime is much smaller.
 
 The method I present in this paper, which I call _REGEL_ (Ratio of Expected Gain and Expected Loss),
-uses the product of three factors. This is the _REGEL_ stopping condition:
+uses the product of three factors. This is the _REGEL_ stopping condition (I'll discuss the threshold later):
 $$ (-EL) \times (EG{+}(-EL)) \times EG \qquad < \qquad ??? $$
 
 When this falls below a predefined threshold (I define the threshold later in this post), the experiment is stopped.
@@ -241,7 +241,7 @@ plt.legend()
 plt.show()
 ```
 <center>
-_Figure 3_: The curve is the range of (EL,EG) pairs for which the stopping criterion is reached.
+_Figure 3_: The curve is the range of (EL,EG) pairs for which the stopping criterion is reached, $(-EL)(EG-EL)EG < 1$.
 The colour tells us which decision is taken.
 
 &nbsp;
@@ -249,8 +249,8 @@ The colour tells us which decision is taken.
 
 ## Why 350?
 
-You might ask why I use a ratio of 350 in the decision criterion.
-That's the first "magic number" in this blog posts.
+You might ask why I use a ratio of 350 as the decision ratio in the decision criterion.
+That's the first "magic number" in this blog post.
 The reason is that it gives a
 [Type I error rate](https://en.wikipedia.org/wiki/Type_I_and_type_II_errors#Type_I_error)
 of 10%.
@@ -260,12 +260,16 @@ and we run an experiment until the REGEL stopping criterion is reached,
 approximately 10% of the simulation will result in a non-Neutral decision.
 5% will be Positive and 5% will be Negative.
 
-I discovered this via simulations. Bear in mind that other stopping criteria will result in a different relationship
+I discovered this via extensive simulations.
+Bear in mind that stopping criteria with a different form - i.e. something other than $(-EL)(EG-EL)(EG) < ???$ -
+will result in a different relationship
 between the decision ratio and the Type I error rate.
 You might be skeptical and wonder how transferable this is. Different simulations with different parameters
-might lead to different results? Actually no, this ratio always gives a Type I error rate of 10% when
+might lead to different results? Actually no, this ratio always gives a Type I error rate of approximately 10% when
 combined with the REGEL stopping criterion, not matter what threshold is used within the stopping criterion (see Figure 4).
-The only requirement is that the threshold be small enough to require at least a few hundred samples.
+This also holds if we vary other simulation parameters.
+The only requirement is that the threshold be small enough to require at least a few hundred samples,
+as a large sample size will ensure the normality assumptions hold.
 
 <center>
 ![_Figure 4_:
@@ -299,13 +303,24 @@ In other words, the
 
 This assumption allows us to treat the mean and variance as [_sufficient statistics_](https://en.wikipedia.org/wiki/sufficient_statistic)
 to describe the distribution.
-The EL and EG are functions of the mean and variance. Also, we can compute the mean and variance
+The EL and EG are functions of the mean and variance; and also, we can compute the mean and variance
 from the EL and EG.
-Therefore, we can say that the EL and EG are sufficient statistics for the posterior distribution.
+This allows us to say that the EL and EG are sufficient statistics for the posterior distribution.
 
 This is useful because it means that two different experiments that have the same EL and also
 have the same EG can be said to be in the same "state", and the future behaviour of the EL and EG (as new data is observed)
 is the same in both.
+
+Another issue is _scale invariance_. If the EL and EG are computed in units of centimetres,
+and then we convert them to units of inches, then the numbers are scaled but the
+experiment is fundamentally the same.
+This observation, combined with the sufficient argument, allow us to see why there is
+consistency in the left panel of Figure 4.
+
+To recap: Imagine two experiments: A rescaled experiment and a long-running experiment.
+Each have the same EL and EG, and therefore they are equivalent as they have
+the same sufficient statistics. Therefore, the 
+
 
 
 

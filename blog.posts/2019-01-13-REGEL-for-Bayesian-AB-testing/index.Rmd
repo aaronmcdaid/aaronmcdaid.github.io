@@ -29,9 +29,9 @@ But my evaluation is frequentist, as I discuss the Type I error rate.
 And even though there are a lot of complex simulations in this post, the method itself is quite simple and efficient -
 it uses only the information that is required to perform a t-test.
 
-I think it's a new method, but please tell me if you recognize anything!
+_I think this is a new method, but please tell me if you recognize anything! Fundamentally, my motivation here is personal curiousity; to play with some new ideas and some new software. If I have also accidentally stumbled upon something useful, then that's nice too!_
 
-(There is a [library associated with this post on Github](https://github.com/aaronmcdaid/bayesian.risk), where I also include the Jupyter notebook, on )
+(There is a [library associated with this post on Github](https://github.com/aaronmcdaid/bayesian.risk), where I also include the Jupyter notebook with which I developed and tested this model.)
 
 The basic idea is to answer these two questions:
 
@@ -41,7 +41,20 @@ The basic idea is to answer these two questions:
     1. _Neutral_ - unclear which variant is better.
     1. _Negative_ - variant A is better.
 
-If the effect is strong, we want the experiment to stop early.
+If the effect is strong, we want a stopping criterion which will stop early.
+
+## (very simple overview/summary)
+
+Given any stopping criterion and decision criterion (Bayesian or otherwise), we must answer a few basic questions. If there is truly no effect, i.e. truly no difference in the performance of variant A and variant B, then how will our criteria behave? What will be the average runtime of an experiment under this condition? What will be the maximum runtime? What decisions will be made?
+
+We can investigate this with simulations. We run many simulations, where there truly is zero difference in performance. We can record the average runtime - i.e. record the sample size at which the Stopping Criterion is achieved. And we can record what decisions are reached then. In this case, the _Neutral_ decision is the correct decision, and therefore we hope that the majority of simulations result in the _Neutral_ decision.
+
+On the other hand, if there truly is a difference in performance, we hope that most simulations will result in the correct decision, where the correct decision is either _Positive_ or _Negative_. In the case of a strong effect, we have a strong preference to have short runtimes also.
+
+A very simple method is to simply compute the _expected loss_ and _expected gain_ (defined below) constantly throughout your experiment.
+At least one of those is guaranteed to tend to zero, hence you can reasonably say that your Stopping Criterion is:
+
+> We stop the experiment when either of those quantities is within $\tau$ of zero. i.e. when $\min(x,y) < \tau$
 
 ## Student's t-test
 

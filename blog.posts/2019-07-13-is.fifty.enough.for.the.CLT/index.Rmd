@@ -20,19 +20,21 @@ knitr::opts_chunk$set(engine.path = list(python = '/usr/bin/python3.6'))
 
 [Student's t-test](https://en.wikipedia.org/wiki/Student%27s_t-test) assumes normality in the data.
 
-Well ... I exaggerate a little.  If your data is the revenue-per-order for example, the t-test does _not_ require that the revenues be _normally distributed_.
-But it does require that the _sample mean_ be normally distributed. In other words, if you select a sample of revenues and random and compute their mean, and if you repeat this procedure many times, the distribution of the means must be approximately normal; this is the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem).
+Well ... I exaggerate a little.  If your data is the revenue-per-order for example, the t-test does _not_ require that the revenues be [normally distributed](https://en.wikipedia.org/wiki/Normal_distribution).
+But it does require that the _sample mean_ be normally distributed. In other words, if you select a sample of revenues at random and compute the mean of this sample, and if you repeat this procedure many times, the distribution of the sample mean must be approximately normal; this is the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem).
 
 But how large a sample is required? And how close to normal must the sample mean be?
+
+**_This is quite a simplistic presentation in this blog - I would appreciate pointers to something more thorough and of higher quality!_**
 
 ## "The Large Enough Sample Condition"
 
 It is sometimes said that thirty-to-fifty samples is enough.
-I've heard that many times, but I've never been satisfied with it. In this post, I'll show that it's not always a valid rule.
-I will simulate data from different distributions and investigate to limits of this rule.
+I've heard that many times, but I've never been satisfied with it.
+In this post, I'll show that it's not always a valid rule.
+I will simulate data from different distributions and investigate the limits of this rule.
 
-
-First though, read [this advice](https://www.statisticshowto.datasciencecentral.com/large-enough-sample-condition/).
+First though, read the following quote, from [here](https://www.statisticshowto.datasciencecentral.com/large-enough-sample-condition/).
 It's carefully presented and warns that a lot of assumptions need to be made before you can consider applying the thirty-to-fifty rule:
 
 > _The Large Enough Sample Condition tests whether you have a large enough sample size compared to the population. A general rule of thumb for the Large Enough Sample Condition is that n≥30, where n is your sample size. However, it depends on what you are trying to accomplish and what you know about the distribution. In general, the Large Enough Sample Condition applies if any of these conditions are true:_
@@ -41,6 +43,9 @@ It's carefully presented and warns that a lot of assumptions need to be made bef
 > - _You have a moderately skewed distribution, that’s unimodal without outliers; If your sample size is between 16 and 40, it’s “large enough.”_
 > - _Your sample size is >40, as long as you do not have outliers._
 > - _Your population has a normal distribution._
+
+In the real world, for example in ecommerce applications, we often have very skewed distributions with a high rate of zeroes for example.
+And very tail-heavy with many extreme values. So none of these conditions hold
 
 ## How to simulate
 
@@ -53,7 +58,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 ```
 
-We'll need to draw two samples from the distribution of interest and perform a t-test. And we'll need to perform this multiple times.
+We'll need to draw two samples from the distribution of interest and then perform a t-test.
 
 ```{python}
 def draw_two_samples_and_do_a_ttest(src, n):
@@ -62,6 +67,11 @@ def draw_two_samples_and_do_a_ttest(src, n):
     _, pvalue = ttest_ind(A, B)
     return pvalue
 
+```
+
+... and we'll need to perform this multiple times.
+
+```{python}
 def repeatedly_draw_two_samples_and_do_a_ttest(src, n, M):
     return [draw_two_samples_and_do_a_ttest(src, n) for _ in range(M)]
 ```
@@ -69,8 +79,8 @@ def repeatedly_draw_two_samples_and_do_a_ttest(src, n, M):
 For example, using two samples from a normal distribution, with 100 samples in each. And repeating the process five times to get five pvalues:
 
 ```{python}
-normal = lambda n: np.random.normal(size = n)
-ps = repeatedly_draw_two_samples_and_do_a_ttest(normal, 100, 5)
+standard_normal = lambda n: np.random.normal(size = n)
+ps = repeatedly_draw_two_samples_and_do_a_ttest(standard_normal, 100, 5)
 print(ps)
 ```
 
@@ -85,26 +95,27 @@ Note the log-log scale on this plot; this is done to allow us to focus on the sm
 A common $\alpha$ threshold is 5%, and therefore 5% of the pvalues should be less than 5%.
 
 This 5% is marked as a small red cross in the plots.
-If the data does not go through this point, then there is a problem.
+If the line of pvalues does not go through this point, then there is a problem.
 
 We start with a very simple example. Drawing samples of size 10 from a Normal distribution.
 The line is very straight and goes through the red cross. So far, so good.
 
 
 ```{python}
-def qqplot(ys, label=None):
+def qqplot(ys, label):
     ys = sorted([y for y in ys if not np.isnan(y)])
     N = len(ys)
     xs = (np.arange(N)+0.5) / N
     plt.loglog(xs, ys, label=label)
-    plt.xlabel("Expected (N={})".format(N))
-    plt.ylabel("Observed")
+    plt.xlabel("Expected p-value")
+    plt.ylabel("Observed p-value")
     plt.plot([min(xs), 1], [min(xs), 1], color='grey', linestyle='dashed')
     plt.scatter([0.05], [0.05], color='red', marker='+', s=100)
-    plt.text(0.05, 0.05, ' $(0.05,0.05)$', color='red', verticalalignment='top')
-ps =  repeatedly_draw_two_samples_and_do_a_ttest(normal, 10, 1000)
-qqplot(ps)
+    plt.text(0.05, 0.05, '   (0.05,0.05)', color='red', verticalalignment='top')
 
+ps =  repeatedly_draw_two_samples_and_do_a_ttest(standard_normal, 10, 1000)
+qqplot(ps, 'standard Normal. n=10')
+plt.legend()
 plt.show()
 ```
 
@@ -116,7 +127,8 @@ Even with a large sample size (10'000) the distribution clearly deviates from un
 ```{python}
 plt.figure()
 ps =  repeatedly_draw_two_samples_and_do_a_ttest(np.random.standard_cauchy, 10000, 1000)
-qqplot(ps)
+qqplot(ps, 'Cauchy. n=10000')
+plt.legend()
 plt.show()
 ```
 
@@ -124,21 +136,23 @@ This means the "thirty-to-fifty" rule doesn't work if the underlying data is fro
 In fact, even if you have _fifty million_ points in your sample, the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_Limit_Theorem)
 will never apply to the Cauchy distribution. This is because the Cauchy does not have a finite variance.
 
-I must say that I don't quite know how to fit this observation into the quote from the start of this article;
+## Outliers
+
+I must say that I don't quite know how to fit this observation into the "Large Enough Sample Condition" quote from the start of this article;
 the Cauchy distribution is symmetric and unimodal and isn't skewed.
 I think the quote abuses the word "outlier" to imply that "without outliers" means the same as "has small variance".
-I've never been satisfied with the usage of the word "outlier".
-
-Anyway, you might be tempted to dismiss the Cauchy distribution as unrealistic. (It's not!).
-But if you insist on something in the real world, let's use the example of click-through rates instead.
+I've never been satisfied with the general usage of the word "outlier".
 
 ## Click-through rates
+
+Anyway, you might be tempted to dismiss the Cauchy distribution as unrealistic. (It's not!).
+But if you insist on something more realistic, let's use the example of click-through rates instead.
 
 If you are testing two different advertising strategies, you might compare the proportions of the ads that are clicked on.
 Let's start with a very high click through rate of 10%.
 
 With a very small sample size of 10, we see the pvalues are not uniform.
-Increasing the sample size to 50, we see that the pvalues become more uniform, showing that the rule of thumb works in this case:
+Increasing the sample size to 50, we see that the pvalues become more uniform, showing that the thirty-to-fifty rule works in this case:
 
 ```{python}
 click_through_rate_10 = lambda n: np.random.binomial(1, 0.10, n)
@@ -182,8 +196,11 @@ In all these examples, the error rate has been lower than expected.
 This is good, as it is more conservative.
 But it also means that we have lost some _statistical power_.
 
-
-
+So what do we do instead? I'm not going to push a particular option.
+But I'm going to suggest bootstrapping I think.
+Even in the world of "Big data", the data isn't so big that we can't do bootstrapping.
+This allows us to get the null distribution of the statistic of interest.
+But that's for another post I think.
 
 
 &nbsp;

@@ -23,5 +23,5 @@ Statistics and Python and C++, and other fun projects
 ***by [Aaron](https://aaronmcdaid.github.io/), `r params$publication_date`***
 
 
-[(code for this document)](index.Rmd)
+[(source code to recreate this document)](index.Rmd)
 </div>

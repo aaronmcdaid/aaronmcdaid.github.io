@@ -152,17 +152,18 @@ If you are testing two different advertising strategies, you might compare the p
 Let's start with a very high click through rate of 10%.
 
 With a very small sample size of 10, we see the pvalues are not uniform.
-Increasing the sample size to 50, we see that the pvalues become more uniform, showing that the thirty-to-fifty rule works in this case:
+Increasing the sample size to 50, we see that the pvalues become much more uniform in the vicinity of 5%,
+showing that the thirty-to-fifty rule works in this case:
 
 ```{python}
 click_through_rate_10 = lambda n: np.random.binomial(1, 0.10, n)
 ```
 ```{python}
 plt.figure()
-ps =  repeatedly_draw_two_samples_and_do_a_ttest(click_through_rate_10, 10, 1000)
-qqplot(ps, label='N=10')
-ps =  repeatedly_draw_two_samples_and_do_a_ttest(click_through_rate_10, 50, 1000)
-qqplot(ps, label='N=50')
+ps =  repeatedly_draw_two_samples_and_do_a_ttest(click_through_rate_10, 10, 100000)
+qqplot(ps, label='CTR10% N=10')
+ps =  repeatedly_draw_two_samples_and_do_a_ttest(click_through_rate_10, 50, 100000)
+qqplot(ps, label='CTR10% N=50')
 plt.legend()
 plt.show()
 ```
@@ -176,13 +177,13 @@ Even with 200 samples, it still doesn't look good:
 click_through_rate_0035 = lambda n: np.random.binomial(1, 0.0035, n)
 plt.figure()
 for sample_size in [50, 200, 1000, 10000]:
-	ps =  repeatedly_draw_two_samples_and_do_a_ttest(click_through_rate_0035, sample_size, 1000)
-	qqplot(ps, label='N={}'.format(sample_size))
+	ps =  repeatedly_draw_two_samples_and_do_a_ttest(click_through_rate_0035, sample_size, 10000)
+	qqplot(ps, label='CTR 0.35% N={}'.format(sample_size))
 plt.legend()
 plt.show()
 ```
 
-At 1'000 samples, we see that the 5% error rate is retained.
+At approximately 1'000 samples, we see that the 5% error rate is retained.
 
 ## Conclusion
 
@@ -200,7 +201,7 @@ So what do we do instead? I'm not going to push a particular option.
 But I'm going to suggest bootstrapping I think.
 Even in the world of "Big data", the data isn't so big that we can't do bootstrapping.
 This allows us to get the null distribution of the statistic of interest.
-But that's for another post I think.
+But that's for another post!
 
 
 &nbsp;

@@ -2,7 +2,7 @@
 title: "*Is 50 samples enough for the Central Limit Theorem?*"
 output: html_document
 params:
-    publication_date: "19th July 2019"
+    publication_date: "23rd July 2019"
 ---
 
 ```{r child='../_header_and_footer/header.Rmd'}
